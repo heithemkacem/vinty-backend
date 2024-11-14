@@ -3,7 +3,7 @@ const Profile = require('../../Models/Profile/Profile');
 
 exports.createAdmin = async (req, res) => {
   try {
-    // Create and save the profile
+
     const profileData = {
       fullName: req.body.fullName,
       email: req.body.email,

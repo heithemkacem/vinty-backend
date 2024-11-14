@@ -17,14 +17,21 @@ exports.updateRecentSearch = async (clientId, searchTerm) => {
 // Delete the whole search list for a client
 exports.deleteWholeSearchList = async (req, res) => {
   const { clientId } = req.params;
+  console.log(clientId)
   try {
-    await Client.deleteOne({ _id: clientId }, { $set: { recent_search: [] } });
+    
+    await Client.updateOne(
+      { _id: clientId },
+      { $set: { recent_search: [] } }
+    );
+
     res.status(200).json({ message: 'Search list deleted successfully' });
   } catch (error) {
     console.error('Error deleting search list:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 // Delete a search item by name for a specific client
 exports.deleteSearchByName = async (req, res) => {

@@ -6,7 +6,7 @@ const bcrypt = require('bcryptjs');
 const vendingMachineOwnerSchema = new mongoose.Schema({
   profileId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Profile', // Reference to the Profile model
+    ref: 'Profile',
     required: true
   },
   fullName: {

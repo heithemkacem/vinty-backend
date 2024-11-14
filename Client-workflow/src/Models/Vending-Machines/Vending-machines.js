@@ -1,15 +1,14 @@
 // models/VendingMachine.js
-
 const mongoose = require('mongoose');
 
 const vendingMachineSchema = new mongoose.Schema({
-  location: {
-    type: String, 
+  name: {
+    type: String,
     required: true
   },
-  blocked: {
-    type: Boolean,
-    default: false
+  location: {
+    type: String,
+    required: true
   },
   open: {
     type: [String],
@@ -20,18 +19,6 @@ const vendingMachineSchema = new mongoose.Schema({
     lat: { type: Number, required: true },
     long: { type: Number, required: true }
   },
-  categories: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Category'
-    }
-  ],
-  subCategories: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'SubCategory'
-    }
-  ],
   products: [
     {
       type: mongoose.Schema.Types.ObjectId,

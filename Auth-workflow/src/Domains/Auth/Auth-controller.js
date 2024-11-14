@@ -1,5 +1,5 @@
 const Profile = require('../../Models/Profile/Profile.js');
-const Client = require ('../../models/Client/Client.js')
+const Client = require ('../../Models/Client/Client.js')
 const jwt = require('jsonwebtoken');
 const { OTP, sendVerificationEmail } = require('../../models/OTP/Otp.js');
 const { OAuth2Client } = require('google-auth-library');
@@ -82,7 +82,6 @@ exports.googleLogin = async (req, res) => {
 exports.register = async (req, res) => {
   try {
     const { fullName, email, password, role } = req.body;
-
     const { error } = registerSchema.validate({ fullName, email, password });
     if (error) {
       return res.status(400).json(createErrorResponse(error.details[0].message, 400));
@@ -94,7 +93,7 @@ exports.register = async (req, res) => {
       return res.status(400).json(createErrorResponse('Email already registered', 400));
     }
 
-    // Create a new profile
+
     const profile = new Profile({ fullName, email, password, role });
     await profile.save();
 
@@ -130,7 +129,16 @@ exports.register = async (req, res) => {
     await sendVerificationEmail(email, otp);
     console.log('OTP sent for email verification');
 
-    res.status(201).json({ message: 'Profile created successfully and OTP sent' });
+    res.status(201).json({
+      ok: true,
+      message: 'Profile created successfully and OTP sent',
+      profile: {
+        id: profile._id,
+        fullName: profile.fullName,
+        email: profile.email,
+        role: profile.role,
+      }
+    });
   } catch (error) {
     console.error('Registration error:', error.message);
     res.status(500).json(createErrorResponse('Server error', 500));
@@ -143,7 +151,6 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Check if the user exists in Profile
     const profile = await Profile.findOne({ email });
     if (!profile) {
       return res.status(400).json(createErrorResponse('Invalid email or password', 400));
@@ -157,21 +164,28 @@ exports.login = async (req, res) => {
     if (!isValidPassword) {
       return res.status(400).json(createErrorResponse('Invalid email or password', 400));
     }
-
-    // Check if the user is an Admin or Machine Owner
     let user = null;
     let userRole = profile.role;
     let userId = null;
+    let userData = null;
 
     if (userRole === 'admin') {
       user = await Admin.findOne({ profileId: profile._id });
       if (user) {
-        userId = user._id; // Admin ID
+        userId = user._id;
+        userData = user; 
       }
     } else if (userRole === 'machine owner') {
       user = await VendingMachineOwner.findOne({ profileId: profile._id });
       if (user) {
         userId = user._id;
+        userData = user;
+      }
+    } else if (userRole === 'user') {
+      user = await Client.findOne({ profileId: profile._id });
+      if (user) {
+        userId = user._id;
+        userData = user; // Add the full client data
       }
     }
 
@@ -179,13 +193,10 @@ exports.login = async (req, res) => {
       return res.status(404).json(createErrorResponse('User role not found', 404));
     }
 
-    
     const token = jwt.sign(
       {
-        profileId: profile._id,
-        userId: userId,  
         role: profile.role,
-        source: profile.source,
+        userData: userData 
       },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }

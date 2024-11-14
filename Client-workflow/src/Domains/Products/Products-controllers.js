@@ -2,6 +2,7 @@
 const Product = require('../../Models/Products/Products');
 const VendingMachine = require('../../Models/Vending-Machines/Vending-machines');
 const { createErrorResponse } = require('../../Utils/Error-handle'); 
+const Category = require('../../Models/Categories/Categories')
 
 // Create a new product
 exports.createProduct = async (req, res) => {
@@ -17,12 +18,16 @@ exports.createProduct = async (req, res) => {
 // Get all products
 exports.getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find();
+    
+    const products = await Product.find()
+      .populate('category') 
+      .populate('subCategory');
     res.status(200).json(products);
   } catch (error) {
     res.status(500).json(createErrorResponse('Server error', 500));
   }
 };
+
 
 // Get a product by ID
 exports.getProductById = async (req, res) => {
@@ -73,3 +78,23 @@ exports.getProductsByVendingMachineId = async (req, res) => {
       res.status(500).json(createErrorResponse('Server error', 500));
     }
   };
+  exports.getProductsForCategory = async (req, res) => {
+    try {
+      const { categoryId } = req.params;
+      const category = await Category.findById(categoryId);
+      if (!category) {
+        return res.status(404).json({ message: 'Category not found' });
+      }
+      const products = await Product.find({ category: categoryId })
+        .populate({
+          path: 'category',
+        })
+        .populate({
+          path: 'subCategory', 
+        });
+      res.status(200).json(products);
+    } catch (error) {
+      res.status(500).json(createErrorResponse('Server error', 500));
+    }
+  };
+  

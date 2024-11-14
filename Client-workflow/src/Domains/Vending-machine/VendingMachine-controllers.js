@@ -22,7 +22,7 @@ const updateRecentSearch = async (clientId, searchTerm) => {
 
   exports.createVendingMachine = async (req, res) => {
     try {
-      const { ownerId, location, position, open } = req.body;
+      const { name,ownerId, location, position, open } = req.body;
   
       const categories = req.body.categories || [];
       const subCategories = req.body.subCategories || [];
@@ -34,8 +34,9 @@ const updateRecentSearch = async (clientId, searchTerm) => {
         return res.status(404).json({ message: 'Owner not found' });
       }
   
-      // Create new vending machine instance
+   
       const newVendingMachine = new VendingMachine({
+        name,
         location,
         position,
         categories,
@@ -60,27 +61,36 @@ const updateRecentSearch = async (clientId, searchTerm) => {
   };
   
 
-// Get all vending machines
-exports.getAllVendingMachines = async (req, res) => {
-  try {
-  
-    const vendingMachines = await VendingMachine.find(req.unblockedFilter)
-      .populate('categories')
-      .populate('subCategories')
-      .populate('products');
-    res.status(200).json(vendingMachines);
-  } catch (error) {
-    res.status(500).json(createErrorResponse('Server error', 500));
-  }
-};
 
-// Get a vending machine by ID
+  exports.getAllVendingMachines = async (req, res) => {
+    try {
+      const vendingMachines = await VendingMachine.find(req.unblockedFilter)
+        .populate({
+          path: 'products',
+          populate: [
+            { path: 'category', model: 'Category' },
+            { path: 'subCategory', model: 'SubCategory' }
+          ]
+        });
+        
+      res.status(200).json(vendingMachines);
+    } catch (error) {
+      console.error('Error fetching vending machines:', error);
+      res.status(500).json(createErrorResponse('Server error', 500));
+    }
+  };
+
 exports.getVendingMachineById = async (req, res) => {
   try {
-    const vendingMachine = await VendingMachine.findOne({ _id: req.params.id, blocked: false })
-      .populate('categories')
-      .populate('subCategories')
-      .populate('products');
+    const vendingMachine = await VendingMachine.findOne({ _id: req.params.id})
+      .populate({
+        path: 'products',
+        populate: [
+          { path: 'category', model: 'Category' },
+          { path: 'subCategory', model: 'SubCategory' }
+        ]
+      })
+
 
     if (!vendingMachine) {
       return res.status(404).json({ message: 'Vending machine not found or is blocked' });
@@ -92,7 +102,7 @@ exports.getVendingMachineById = async (req, res) => {
 };
 
 
-// Update a vending machine
+
 exports.updateVendingMachine = async (req, res) => {
   try {
     const vendingMachine = await VendingMachine.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -120,15 +130,11 @@ exports.deleteVendingMachine = async (req, res) => {
 
 exports.searchVendingMachines = async (req, res) => {
   const { searchTerm, clientId } = req.query;
- 
-  
-  // Validate input
   if (!searchTerm || !clientId) {
     return res.status(400).json({ message: 'Search term and client ID are required' });
   }
 
   try {
-    console.log("fff");
     // Update recent search for the client
     try {
       await updateRecentSearch(clientId, searchTerm);
@@ -136,42 +142,53 @@ exports.searchVendingMachines = async (req, res) => {
       console.error("Error updating recent search:", error);
       return res.status(500).json({ message: 'Error updating recent search', error });
     }
-    let categories, subCategories, products;
-try {
-  categories = await Category.find({ title: new RegExp(searchTerm, 'i') });
-  subCategories = await SubCategory.find({ title: new RegExp(searchTerm, 'i') });
-  products = await Product.find({
-    $or: [
-      { name: new RegExp(searchTerm, 'i') },
-      { subName: new RegExp(searchTerm, 'i') }
-    ]
-  });
-} catch (error) {
-  console.error("Error finding search results:", error);
-  return res.status(500).json({ message: 'Error retrieving categories, subcategories, or products', error });
-}
 
+    let categories, subCategories, products;
+    
+    try {
+      // Search for matching categories, subcategories, and products
+      categories = await Category.find({ title: new RegExp(searchTerm, 'i') });
+      subCategories = await SubCategory.find({ title: new RegExp(searchTerm, 'i') });
+      products = await Product.find({
+        $or: [
+          { name: new RegExp(searchTerm, 'i') },
+          { subName: new RegExp(searchTerm, 'i') }
+        ]
+      });
+    } catch (error) {
+      console.error("Error finding search results:", error);
+      return res.status(500).json({ message: 'Error retrieving categories, subcategories, or products', error });
+    }
 
     // Collect IDs for search criteria
     const categoryIds = categories.map(cat => cat._id);
     const subCategoryIds = subCategories.map(subCat => subCat._id);
     const productIds = products.map(prod => prod._id);
 
-    // Find vending machines matching criteria and not blocked
+    // Find vending machines matching the criteria and not blocked
     const vendingMachines = await VendingMachine.find({
-      ...req.unblockedFilter, 
+      ...req.unblockedFilter,
       $or: [
-        { categories: { $in: categoryIds } },
-        { subCategories: { $in: subCategoryIds } },
-        { products: { $in: productIds } }
+        { products: { $in: productIds } },
+        { 'products.category': { $in: categoryIds } },
+        { 'products.subCategory': { $in: subCategoryIds } }
       ]
-    }).populate('categories subCategories products');
+    })
+    .populate({
+      path: 'products',
+      populate: [
+        { path: 'category', model: 'Category' },
+        { path: 'subCategory', model: 'SubCategory' }
+      ]
+    });
 
     res.status(200).json(vendingMachines);
   } catch (error) {
+    console.error("Server error:", error);
     res.status(500).json({ message: 'Server error', error });
   }
 };
+
  
   exports.getAllVendingMachineCoordinates = async (req, res) => {
     try {

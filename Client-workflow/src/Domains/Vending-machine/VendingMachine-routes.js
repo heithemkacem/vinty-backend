@@ -6,11 +6,11 @@ const adminCheck = require('../../Middleware/Authorize');
 const filterUnblocked = require('../../Middleware/filter-unblocked')
 
 router.post('/', vendingMachineController.createVendingMachine);
-router.get('/', filterUnblocked,vendingMachineController.getAllVendingMachines);
-router.get('/:id',filterUnblocked, vendingMachineController.getVendingMachineById);
+router.get('/', vendingMachineController.getAllVendingMachines);
+router.get('/:id',vendingMachineController.getVendingMachineById);
 router.put('/:id', vendingMachineController.updateVendingMachine);
 router.delete('/:id', vendingMachineController.deleteVendingMachine);
-router.get('/machines/search',filterUnblocked, vendingMachineController.searchVendingMachines);
+router.get('/machines/search', vendingMachineController.searchVendingMachines);
 router.get('/machines/lcoations', vendingMachineController.getAllVendingMachineCoordinates);
 router.patch('/:machineId/toggle-block',  vendingMachineController.toggleBlockVendingMachine);
 

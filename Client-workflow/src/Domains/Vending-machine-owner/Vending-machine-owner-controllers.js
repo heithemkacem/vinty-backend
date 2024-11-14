@@ -29,20 +29,21 @@ exports.getVendingMachinesByOwner = async (req, res) => {
 
 exports.createProduct = async (req, res) => {
   try {
-    const { name, subName, price, image, category, vendingMachineId } = req.body;
+    const { name, subName, price, image, categoryId, subCategoryId, vendingMachineId } = req.body;
 
-    // Validate required fields
-    if (!name || !subName || !price || !image || !category || !vendingMachineId) {
-      return res.status(400).json({ message: 'All fields are required.' });
+    // Check if the required fields are provided
+    if (!name || !subName || !price || !image || !categoryId || !vendingMachineId) {
+      return res.status(400).json({ message: 'All required fields must be provided.' });
     }
 
-    // Create a new product
+    // Create a new product, associating it with a category and optionally a subcategory
     const newProduct = new Product({
       name,
       subName,
       price,
       image,
-      category,
+      category: categoryId, 
+      subCategory: subCategoryId || null, 
     });
 
     await newProduct.save();

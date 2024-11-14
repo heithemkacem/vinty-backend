@@ -17,11 +17,6 @@ const profileSchema = new mongoose.Schema({
     default: false
   },
   source: { type: String, enum: ['App', 'Google', 'Apple'], default: 'App' }
-  ,
-  clients: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Client',
-  }],
 });
 
 
