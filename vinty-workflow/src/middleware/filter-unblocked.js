@@ -1,5 +1,5 @@
 
-const VendingMachine = require('../Models/Vending-Machines/Vending-machines');
+const {VendingMachine} = require('../models');
 
 
 const filterUnblocked = async (req, res, next) => {

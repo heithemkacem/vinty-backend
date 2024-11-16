@@ -1,11 +1,10 @@
 // controllers/vendingMachineOwnerController.js
 
-const VendingMachineOwner = require("../../Models/Vending-vending-machine-owner/Vending-vending-machine-owner");
-const Product = require("../../Models/Products/Products");
-const VendingMachine = require("../../Models/Vending-Machines/Vending-machines");
+const {VendingMachineOwner} = require("../../models");
+const {Product} = require("../../models");
+const {VendingMachine} = require("../../models");
 const createErrorResponse = require("../../Utils/Error-handle");
-const Category = require("../../Models/Categories/Categories");
-const SubCategory = require("../../Models/Sub-Categories/subCategories");
+
 
 exports.getVendingMachinesByOwner = async (req, res) => {
   try {

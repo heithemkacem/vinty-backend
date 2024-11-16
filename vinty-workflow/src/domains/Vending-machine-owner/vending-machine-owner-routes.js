@@ -1,5 +1,5 @@
 const express = require("express");
-const vendingMachineOwnerController = require("./Vending-vending-machine-owner-controllers");
+const vendingMachineOwnerController = require("./vending-machine-owner-controller");
 const router = express.Router();
 
 router.get(

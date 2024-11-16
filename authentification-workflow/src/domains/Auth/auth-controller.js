@@ -1,5 +1,5 @@
-const Profile = require("../../models/Profile/profile.js");
-const Client = require("../../models/Client/client.js");
+const {Profile} = require("../../models");
+const {Client} = require("../../models");
 const jwt = require("jsonwebtoken");
 const { OTP, sendVerificationEmail } = require("../../models/OTP/otp.js");
 const { OAuth2Client } = require("google-auth-library");

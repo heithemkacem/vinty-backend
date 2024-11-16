@@ -1,7 +1,7 @@
 // routes/vendingMachineRoutes.js
 const express = require('express');
 const router = express.Router();
-const vendingMachineController = require('./VendingMachine-controllers');
+const vendingMachineController = require('./vending-machine-controller');
 const adminCheck = require('../../Middleware/Authorize');
 const filterUnblocked = require('../../Middleware/filter-unblocked')
 
