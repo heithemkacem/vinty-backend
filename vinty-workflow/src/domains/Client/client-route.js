@@ -8,7 +8,8 @@ router.delete(
   "/:clientId/search-list/:name",
   clientController.deleteSearchByName
 );
-
 router.get("/:clientId/search-list", clientController.getSearchList);
+router.put('/:id', clientController.updateClient); 
+router.delete('/:id',clientController.deleteClient); 
 
 module.exports = router;

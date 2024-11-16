@@ -13,5 +13,7 @@ router.delete(
 router.delete("/:adminId/search-list", adminController.clearAdminSearchList);
 router.delete("/owner/:ownerId", adminController.deleteVendingMachineOwner);
 router.put("/owner/:ownerId", adminController.updateVendingMachineOwner);
+router.put('/:id',adminController.updateAdmin); 
+router.delete('/:id',adminController.deleteAdmin);
 
 module.exports = router;

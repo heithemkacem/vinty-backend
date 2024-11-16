@@ -11,5 +11,8 @@ router.delete(
   "/remove/:vendingMachineId/:productId",
   vendingMachineOwnerController.removeProductFromVendingMachine
 );
+router.put('/:id', vendingMachineOwnerController.updateVendingMachineOwner); 
+router.delete('/:id',vendingMachineOwnerController.deleteVendingMachineOwner); 
+
 
 module.exports = router;

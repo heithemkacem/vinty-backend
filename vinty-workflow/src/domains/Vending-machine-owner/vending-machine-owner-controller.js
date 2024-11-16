@@ -112,3 +112,26 @@ exports.removeProductFromVendingMachine = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+exports.updateVendingMachineOwner = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+    const owner = await VendingMachineOwner.findByIdAndUpdate(id, updates, { new: true });
+    if (!owner) return res.status(404).json({ message: 'Owner not found' });
+    res.status(200).json(owner);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+exports.deleteVendingMachineOwner = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const owner = await VendingMachineOwner.findByIdAndDelete(id);
+    if (!owner) return res.status(404).json({ message: 'Owner not found' });
+    res.status(200).json({ message: 'Owner deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
