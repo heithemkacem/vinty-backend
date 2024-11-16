@@ -1,4 +1,4 @@
-const Client = require('../../models/Client/Client');
+const {Client} = require('../../models/index');
 
 exports.updateRecentSearch = async (clientId, searchTerm) => {
     try {

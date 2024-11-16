@@ -1,8 +1,8 @@
 // controllers/productController.js
-const Product = require('../../Models/Products/Products');
-const VendingMachine = require('../../Models/Vending-Machines/Vending-machines');
+const {Product} = require('../../models');
+const {VendingMachine} = require('../../models');
 const { createErrorResponse } = require('../../Utils/Error-handle'); 
-const Category = require('../../Models/Categories/Categories')
+const {Category} = require('../../models')
 
 // Create a new product
 exports.createProduct = async (req, res) => {

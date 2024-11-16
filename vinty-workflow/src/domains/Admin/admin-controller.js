@@ -1,6 +1,6 @@
-const Admin = require("../../Models/Admin/Admin");
-const Profile = require("../../Models/Profile/Profile");
-const VendingMachineOwner = require("../../Models/Vending-vending-machine-owner/Vending-vending-machine-owner");
+const {Admin} = require("../../models");
+const {Profile} = require("../../models");
+const {VendingMachineOwner} = require("../../models");
 
 exports.createAdmin = async (req, res) => {
   try {
