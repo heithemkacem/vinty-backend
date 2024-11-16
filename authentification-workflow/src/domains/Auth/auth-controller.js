@@ -90,7 +90,7 @@ exports.register = async (req, res) => {
         .json(createErrorResponse(error.details[0].message, 400));
     }
 
-    // Check if the email already exists
+ 
     const existingUser = await Profile.findOne({ email });
     if (existingUser) {
       return res
@@ -104,6 +104,8 @@ exports.register = async (req, res) => {
     if (role === "user") {
       const client = new Client({
         profileId: profile._id,
+        name:fullName,
+        email : email,
         favorites: [],
         recent_search: [],
         location: "",
