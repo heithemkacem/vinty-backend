@@ -105,6 +105,8 @@ exports.register = async (req, res) => {
     if (role === "user") {
       const client = new Client({
         profileId: profile._id,
+        name: fullName,
+        email: email,
         favorites: [],
         recent_search: [],
         location: "",
