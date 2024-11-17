@@ -9,6 +9,7 @@ const axios = require("axios");
 const { generateAndHashOTP } = require("../../Utils/Generate-otp.js");
 require("dotenv").config();
 const { createErrorResponse } = require("../../Utils/Error-handle.js");
+const VendingMachineOwner = require('../../models/Vending-machine-owner/vending-machine-owner.js')
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
@@ -195,7 +196,9 @@ exports.login = async (req, res) => {
       }
     } else if (userRole === "vending-machine-owner") {
       user = await VendingMachineOwner.findOne({ profileId: profile._id });
+      console.log('hahaha')
       if (user) {
+
         userId = user._id;
         userData = user;
       }
@@ -203,7 +206,7 @@ exports.login = async (req, res) => {
       user = await Client.findOne({ profileId: profile._id });
       if (user) {
         userId = user._id;
-        userData = user; // Add the full client data
+        userData = user; 
       }
     }
 
