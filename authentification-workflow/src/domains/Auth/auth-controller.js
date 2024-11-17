@@ -1,4 +1,4 @@
-const {Profile,Client,VendingMachineOwner} = require("../../models");
+const {Profile,Client,VendingMachineOwner,Admin} = require("../../models");
 
 const jwt = require("jsonwebtoken");
 const { OTP, sendVerificationEmail } = require("../../models/OTP/otp.js");
@@ -90,7 +90,7 @@ exports.register = async (req, res) => {
         .json(createErrorResponse(error.details[0].message, 400));
     }
 
- 
+    // Check if email already exists
     const existingUser = await Profile.findOne({ email });
     if (existingUser) {
       return res
@@ -98,14 +98,15 @@ exports.register = async (req, res) => {
         .json(createErrorResponse("Email already registered", 400));
     }
 
+    // Create a new profile
     const profile = new Profile({ fullName, email, password, role });
     await profile.save();
 
     if (role === "user") {
       const client = new Client({
         profileId: profile._id,
-        name:fullName,
-        email : email,
+        name: fullName,
+        email: email,
         favorites: [],
         recent_search: [],
         location: "",
@@ -123,6 +124,14 @@ exports.register = async (req, res) => {
         vendingMachines: [],
       });
       await vendingMachineOwner.save();
+    } else if (role === "admin") {
+      const admin = new Admin({
+        profileId: profile._id,
+        fullName,
+        email,
+        password, // Password will be hashed in the Admin model pre-save middleware
+      });
+      await admin.save();
     }
 
     // Generate and save OTP for email verification
