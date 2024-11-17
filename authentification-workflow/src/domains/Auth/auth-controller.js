@@ -1,5 +1,5 @@
-const {Profile} = require("../../models");
-const {Client} = require("../../models");
+const { Profile, VendingMachineOwner } = require("../../models");
+const { Client } = require("../../models");
 const jwt = require("jsonwebtoken");
 const { OTP, sendVerificationEmail } = require("../../models/OTP/otp.js");
 const { OAuth2Client } = require("google-auth-library");
@@ -90,7 +90,6 @@ exports.register = async (req, res) => {
         .json(createErrorResponse(error.details[0].message, 400));
     }
 
- 
     const existingUser = await Profile.findOne({ email });
     if (existingUser) {
       return res
@@ -104,8 +103,8 @@ exports.register = async (req, res) => {
     if (role === "user") {
       const client = new Client({
         profileId: profile._id,
-        name:fullName,
-        email : email,
+        name: fullName,
+        email: email,
         favorites: [],
         recent_search: [],
         location: "",
@@ -208,7 +207,7 @@ exports.login = async (req, res) => {
         userData = user; // Add the full client data
       }
     }
-
+    console.log(user);
     if (!user) {
       return res
         .status(404)
