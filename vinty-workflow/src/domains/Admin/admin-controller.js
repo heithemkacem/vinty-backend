@@ -1,6 +1,6 @@
-const Admin = require("../../Models/Admin/Admin");
-const Profile = require("../../Models/Profile/Profile");
-const VendingMachineOwner = require("../../Models/Vending-vending-machine-owner/Vending-vending-machine-owner");
+const {Admin} = require("../../models");
+const {Profile} = require("../../models");
+const {VendingMachineOwner} = require("../../models");
 
 exports.createAdmin = async (req, res) => {
   try {
@@ -244,3 +244,27 @@ exports.updateVendingMachineOwner = async (req, res) => {
     res.status(500).json({ ok: false, message: "Server error" });
   }
 };
+exports.updateAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+    const admin = await Admin.findByIdAndUpdate(id, updates, { new: true });
+    if (!admin) return res.status(404).json({ message: 'Admin not found' });
+    res.status(200).json(admin);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Delete an Admin
+exports.deleteAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const admin = await Admin.findByIdAndDelete(id);
+    if (!admin) return res.status(404).json({ message: 'Admin not found' });
+    res.status(200).json({ message: 'Admin deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+

@@ -1,10 +1,10 @@
-const VendingMachine = require("../../Models/Vending-Machines/Vending-machines");
-const Product = require("../../Models/Products/Products");
-const SubCategory = require("../../Models/Sub-Categories/subCategories");
-const Category = require("../../Models/Categories/Categories");
+const {VendingMachine} = require("../../models");
+const {Product} = require("../../models");
+const {SubCategory} = require("../../models");
+const {Category} = require("../../models");
 const { createErrorResponse } = require("../../Utils/Error-handle");
-const VendingMachineOwner = require("../../Models/Vending-vending-machine-owner/Vending-vending-machine-owner");
-const Client = require("../../models/Client/Client");
+const {VendingMachineOwner} = require("../../models");
+const {Client} = require("../../models");
 
 const updateRecentSearch = async (clientId, searchTerm) => {
   try {

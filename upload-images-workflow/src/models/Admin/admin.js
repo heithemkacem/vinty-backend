@@ -26,10 +26,6 @@ const adminSchema = new mongoose.Schema({
     type: String,
     enum: ['superadmin', 'moderator'],
     default: 'moderator'
-  },
-  searchList: {
-    type: [String], 
-    default: [] 
   }
 }, { timestamps: true });
 

@@ -1,12 +1,12 @@
-// models/Admin.js
+// models/VendingMachineOwner.js
 
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-const adminSchema = new mongoose.Schema({
+const vendingMachineOwnerSchema = new mongoose.Schema({
   profileId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Profile', 
+    ref: 'Profile',
     required: true
   },
   fullName: {
@@ -18,26 +18,19 @@ const adminSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
-  password: {
-    type: String,
-    required: true
-  },
-  accessLevel: {
-    type: String,
-    enum: ['superadmin', 'moderator'],
-    default: 'moderator'
-  },
-  searchList: {
-    type: [String], 
-    default: [] 
-  }
+  vendingMachines: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'VendingMachine'
+    }
+  ]
 }, { timestamps: true });
 
 // Hash the password before saving
-adminSchema.pre('save', async function (next) {
+vendingMachineOwnerSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 10);
   next();
 });
 
-module.exports = mongoose.model('Admin', adminSchema);
+module.exports = mongoose.model('VendingMachineOwner', vendingMachineOwnerSchema);

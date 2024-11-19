@@ -1,5 +1,5 @@
 
-const SubCategory = require('../../Models/Sub-Categories/subCategories');
+const {SubCategory} = require('../../models/index');
 const { createErrorResponse } = require('../../Utils/Error-handle'); 
 
 

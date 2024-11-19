@@ -1,5 +1,5 @@
 const express = require("express");
-const vendingMachineOwnerController = require("./Vending-vending-machine-owner-controllers");
+const vendingMachineOwnerController = require("./vending-machine-owner-controller");
 const router = express.Router();
 
 router.get(
@@ -11,5 +11,8 @@ router.delete(
   "/remove/:vendingMachineId/:productId",
   vendingMachineOwnerController.removeProductFromVendingMachine
 );
+router.put('/:id', vendingMachineOwnerController.updateVendingMachineOwner); 
+router.delete('/:id',vendingMachineOwnerController.deleteVendingMachineOwner); 
+
 
 module.exports = router;

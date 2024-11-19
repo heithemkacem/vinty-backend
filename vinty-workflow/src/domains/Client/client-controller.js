@@ -1,4 +1,4 @@
-const Client = require('../../models/Client/Client');
+const {Client} = require('../../models/index');
 
 exports.updateRecentSearch = async (clientId, searchTerm) => {
     try {
@@ -72,3 +72,26 @@ exports.getSearchList = async (req, res) => {
 };
 
 
+exports.updateClient = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+    const client = await Client.findByIdAndUpdate(id, updates, { new: true });
+    if (!client) return res.status(404).json({ message: 'Client not found' });
+    res.status(200).json(client);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+exports.deleteClient = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const client = await Client.findByIdAndDelete(id);
+    if (!client) return res.status(404).json({ message: 'Client not found' });
+    res.status(200).json({ message: 'Client deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

@@ -1,4 +1,4 @@
-const { Category } = require("../../Models");
+const  {Category}  = require("../../models/index");
 const { createErrorResponse } = require("../../Utils/Error-handle");
 exports.createCategory = async (req, res) => {
   try {

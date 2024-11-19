@@ -6,15 +6,6 @@ const clientSchema = new mongoose.Schema({
       ref: 'Profile',
       required: true,
     },
-    name: {
-      type: String,
-      required: true, 
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true, 
-    },
     favorites: {
       type: [String],
       default: [],
