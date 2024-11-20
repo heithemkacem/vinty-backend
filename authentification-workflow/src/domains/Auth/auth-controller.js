@@ -9,6 +9,7 @@ const axios = require("axios");
 const { generateAndHashOTP } = require("../../Utils/Generate-otp.js");
 require("dotenv").config();
 const { createErrorResponse } = require("../../Utils/Error-handle.js");
+const mailSender = require("../../Utils/Mail-sender.js");
 
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -125,7 +126,7 @@ exports.register = async (req, res) => {
       await vendingMachineOwner.save();
     }
 
-    // Generate and save OTP for email verification
+    // Generate and hash OTP
     const { otp, hashedOtp } = await generateAndHashOTP();
     const otpPayload = {
       email,
@@ -133,12 +134,16 @@ exports.register = async (req, res) => {
       type: "emailVerification",
       userId: profile._id,
     };
-    const data = new OTP(otpPayload);
-    await data.save();
+    await OTP.create(otpPayload);
+    await mailSender(email, "Your OTP", `<h1>Your OTP is: ${otp}</h1>`).catch(
+      (mailError) => {
+        console.error("Error sending OTP email:", mailError);
+        return res
+          .status(500)
+          .json(createErrorResponse("Error sending email", 500));
+      }
+    );
 
-    // Send OTP for email verification
-    await sendVerificationEmail(email, otp);
-    console.log("OTP sent for email verification");
 
     res.status(201).json({
       ok: true,
@@ -155,6 +160,7 @@ exports.register = async (req, res) => {
     res.status(500).json(createErrorResponse("Server error", 500));
   }
 };
+
 
 exports.login = async (req, res) => {
   try {

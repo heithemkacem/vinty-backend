@@ -23,12 +23,10 @@ const otpSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
-    expires: 60 * 5,
+    
   },
 });
 
-
-// Send verification email
 async function sendVerificationEmail(email, otp) {
   try {
     const mailResponse = await mailSender(
@@ -43,12 +41,7 @@ async function sendVerificationEmail(email, otp) {
   }
 }
 
-otpSchema.pre("save", async function (next) {
-  if (this.isNew && this.type === 'emailVerification') {
-    await sendVerificationEmail(this.email, this.otp);
-  }
-  next();
-});
+
 
 module.exports = {
   OTP: mongoose.model("OTP", otpSchema),

@@ -5,12 +5,14 @@ const mailSender = async (email, title, body) => {
   try {
   
     let transporter = nodemailer.createTransport({
+      
       host: process.env.SMTP_HOST,
+      port: 2525,
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       }
-    });
+    }); 
 
     let info = await transporter.sendMail({
       from: 'www.sandeepdev.me - Sandeep Singh',

@@ -1,5 +1,5 @@
 const { OTP } = require("../../models/OTP/otp.js");
-const Profile = require("../../models/Profile/profile.js");
+const { Profile } = require("../../models/");
 const mailSender = require("../../Utils/Mail-sender.js");
 const bcrypt = require("bcrypt");
 const { generateAndHashOTP } = require("../../Utils/Generate-otp.js");
@@ -7,22 +7,21 @@ const { createErrorResponse } = require("../../Utils/Error-handle.js");
 
 exports.verifyOTP = async (req, res) => {
   try {
-    const { userId, otp, type } = req.body;
-    const otpRecord = await OTP.findOne({ userId, type: type });
+    const { email, otp, type } = req.body;
+    console.log(email, otp);
+    const otpRecord = await OTP.findOne({ email, type });
     if (!otpRecord)
       return res
         .status(400)
         .json(createErrorResponse("Invalid or expired OTP", 400));
 
     const isMatch = await bcrypt.compare(otp, otpRecord.otp);
+    console.log(isMatch);
     if (!isMatch)
       return res
         .status(400)
         .json(createErrorResponse("Invalid or expired OTP", 400));
-
-    await Profile.findByIdAndUpdate(userId, { isVerified: true });
-    await OTP.deleteMany({ userId, type: type });
-
+    await Profile.findOneAndUpdate({ email }, { isVerified: true });
     res
       .status(200)
       .json({ ok: true, message: "Account verified successfully" });
