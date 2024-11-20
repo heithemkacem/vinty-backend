@@ -155,10 +155,10 @@ exports.getCategoriesBothTypes = async (req, res) => {
         categories: exclusiveCategories.slice(0, 5).map((category) => ({
 
           title: category.title,
-          bgColor: category.bgColor || "#FFFFFF", // Default color if not set
-          borderColor: category.borderColor || "#000000", // Default color if not set
+          bgColor: category.bgColor || "#FFFFFF",
+          borderColor: category.borderColor || "#000000", 
           blur: category.blur || false,
-          image: category.imageUrl, // Assuming imageUrl field exists in the category
+          image: category.imageUrl, 
         })),
       },
     ];
