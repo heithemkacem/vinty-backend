@@ -1,4 +1,4 @@
-const { Profile, Client, VendingMachineOwner } = require("../../models");
+const { Profile, Client, VendingMachineOwner,Admin } = require("../../models");
 
 const jwt = require("jsonwebtoken");
 const { OTP, sendVerificationEmail } = require("../../models/OTP/otp.js");
@@ -9,7 +9,7 @@ const axios = require("axios");
 const { generateAndHashOTP } = require("../../Utils/Generate-otp.js");
 require("dotenv").config();
 const { createErrorResponse } = require("../../Utils/Error-handle.js");
-const VendingMachineOwner = require('../../models/Vending-machine-owner/vending-machine-owner.js')
+
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
