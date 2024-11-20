@@ -15,6 +15,6 @@ router.put("/categories/:id",auth ,authorize('admin'),  categoryController.updat
 router.delete("/categories/:id",auth,authorize('admin'), categoryController.deleteCategory);
 
 router.get("/categories/type/:type",auth, categoryController.getCategoriesByType);
-router.get("/categories/type/", auth,categoryController.getCategoriesBothTypes);
+router.get("/categories/type/",categoryController.getCategoriesBothTypes);
 
 module.exports = router;

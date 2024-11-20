@@ -128,41 +128,42 @@ exports.getCategoriesByType = async (req, res) => {
 
 exports.getCategoriesBothTypes = async (req, res) => {
   try {
+    // Fetch categories by type
     const normalCategories = await Category.find({ type: 'normal' })
       .populate('subCategories')
-      .limit(5)  
       .lean();
 
     const exclusiveCategories = await Category.find({ type: 'exclusive' })
       .populate('subCategories')
-      .limit(5) 
       .lean();
 
-    const categoriesData = {
-      "Normal Categories": normalCategories.map((category) => ({
-        title: category.title,
-        subCategories: category.subCategories.slice(0, 5).map((subCategory) => ({ 
-          id: subCategory._id,
-          title: subCategory.title,
-          image: subCategory.imageUrl,
-          bgColor: subCategory.bgColor,
-          borderColor: subCategory.borderColor,
-          blur: subCategory.blur || false,
+    // Format the response
+    const categoriesData = [
+      {
+        title: "Categories",
+        categories: normalCategories.slice(0, 5).map((category) => ({
+          _id: category._id,
+          title: category.title,
+          bgColor: category.bgColor || "#FFFFFF", // Default color if not set
+          borderColor: category.borderColor || "#000000", // Default color if not set
+          blur: category.blur || false,
+          image: category.imageUrl, // Assuming imageUrl field exists in the category
         })),
-      })),
-      "Exclusive Categories": exclusiveCategories.map((category) => ({
-        title: category.title,
-        subCategories: category.subCategories.slice(0, 5).map((subCategory) => ({ // Limit to 5 subcategories
-          id: subCategory._id,
-          title: subCategory.title,
-          image: subCategory.imageUrl,
-          bgColor: subCategory.bgColor,
-          borderColor: subCategory.borderColor,
-          blur: subCategory.blur || false,
-        })),
-      })),
-    };
+      },
+      {
+        title: "Exclusive Categories",
+        categories: exclusiveCategories.slice(0, 5).map((category) => ({
 
+          title: category.title,
+          bgColor: category.bgColor || "#FFFFFF", // Default color if not set
+          borderColor: category.borderColor || "#000000", // Default color if not set
+          blur: category.blur || false,
+          image: category.imageUrl, // Assuming imageUrl field exists in the category
+        })),
+      },
+    ];
+
+    // Send the formatted response
     res.status(200).json(categoriesData);
   } catch (error) {
     res.status(500).json(createErrorResponse("Server error", 500));
