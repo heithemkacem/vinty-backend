@@ -7,8 +7,8 @@ const { createErrorResponse } = require("../../Utils/Error-handle.js");
 
 exports.verifyOTP = async (req, res) => {
   try {
-    const { userId, otp } = req.body;
-    const otpRecord = await OTP.findOne({ userId, type: "emailVerification" });
+    const { userId, otp, type } = req.body;
+    const otpRecord = await OTP.findOne({ userId, type: type });
     if (!otpRecord)
       return res
         .status(400)
@@ -21,7 +21,7 @@ exports.verifyOTP = async (req, res) => {
         .json(createErrorResponse("Invalid or expired OTP", 400));
 
     await Profile.findByIdAndUpdate(userId, { isVerified: true });
-    await OTP.deleteMany({ userId, type: "emailVerification" });
+    await OTP.deleteMany({ userId, type: type });
 
     res
       .status(200)
@@ -34,7 +34,7 @@ exports.verifyOTP = async (req, res) => {
 exports.resendOTP = async (req, res) => {
   try {
     console.log("Request Body:", req.body);
-    const { email } = req.body;
+    const { email, type } = req.body;
     const user = await Profile.findOne({ email });
     if (!user)
       return res.status(404).json(createErrorResponse("User not found", 404));
@@ -44,12 +44,12 @@ exports.resendOTP = async (req, res) => {
     // Check for existing OTP records before deletion
     const existingOtps = await OTP.find({
       userId: user._id,
-      type: "emailVerification",
+      type: type,
     });
     if (existingOtps.length > 0) {
       const deleteResult = await OTP.deleteMany({
         userId: user._id,
-        type: "emailVerification",
+        type: type,
       });
       console.log("Deleted OTP records:", deleteResult.deletedCount);
     } else {
@@ -64,7 +64,7 @@ exports.resendOTP = async (req, res) => {
       otp: hashedOtp,
       email: email,
       createdAt: Date.now(),
-      type: "emailVerification",
+      type: type,
     });
 
     await newOtpRecord.save();
@@ -120,31 +120,6 @@ exports.requestPasswordReset = async (req, res) => {
       `<h1>Your OTP is: ${otp}</h1>`
     );
     res.status(200).json({ ok: true, message: "OTP sent successfully" });
-  } catch (error) {
-    res.status(500).json(createErrorResponse("Server error", 500));
-  }
-};
-
-exports.verifyPasswordResetOTP = async (req, res) => {
-  try {
-    const { userId, otp } = req.body;
-
-    const otpRecord = await OTP.findOne({ userId, type: "passwordReset" });
-    if (!otpRecord)
-      return res
-        .status(400)
-        .json(createErrorResponse("Invalid or expired OTP", 400));
-
-    const isMatch = await bcrypt.compare(otp, otpRecord.otp);
-    if (!isMatch)
-      return res
-        .status(400)
-        .json(createErrorResponse("Invalid or expired OTP", 400));
-
-    await OTP.deleteMany({ userId, type: "passwordReset" });
-    res
-      .status(200)
-      .json({ ok: true, message: "OTP verified, proceed to reset password" });
   } catch (error) {
     res.status(500).json(createErrorResponse("Server error", 500));
   }
