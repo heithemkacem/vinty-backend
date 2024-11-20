@@ -14,6 +14,6 @@ router.put("/:id", clientController.updateClient);
 router.delete("/:id", clientController.deleteClient);
 router.post("/favorites/add", auth, clientController.addToFavorites);
 router.get("/favorites", auth, clientController.getFavorites);
-router.post("/favorites/remove", auth, clientController.removeFromFavorites);
+router.delete("/favorites/remove", auth, clientController.removeFromFavorites);
 
 module.exports = router;
