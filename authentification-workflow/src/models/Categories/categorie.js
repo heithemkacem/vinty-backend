@@ -26,7 +26,13 @@ const categorySchema = new mongoose.Schema({
     type: String,
     enum: ['exclusive', 'normal'],
     required: true,
-  }
+  },
+  subCategories: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'SubCategory',
+    },
+  ],
 }, { timestamps: true });
 
-module.exports = mongoose.model('Category', categorySchema);
+module.exports = mongoose.models.Category || mongoose.model('Category', categorySchema);

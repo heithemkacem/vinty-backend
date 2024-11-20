@@ -104,15 +104,13 @@ exports.getCategoriesByType = async (req, res) => {
     const categories = await Category.find({ type })
       .populate('subCategories')
       .lean()
-      .limit(5);
-
     if (!categories || categories.length === 0) {
       return res.status(404).json(createErrorResponse("No categories found", 404));
     }
 
     const categoriesData = categories.map((category) => ({
       title: category.title,
-      subCategories: category.subCategories.slice(0, 5).map((subCategory) => ({
+      subCategories: category.subCategories.map((subCategory) => ({
         id: subCategory._id,
         title: subCategory.title,
         image: subCategory.imageUrl,
@@ -128,3 +126,45 @@ exports.getCategoriesByType = async (req, res) => {
   }
 };
 
+exports.getCategoriesBothTypes = async (req, res) => {
+  try {
+    const normalCategories = await Category.find({ type: 'normal' })
+      .populate('subCategories')
+      .limit(5)  
+      .lean();
+
+    const exclusiveCategories = await Category.find({ type: 'exclusive' })
+      .populate('subCategories')
+      .limit(5) 
+      .lean();
+
+    const categoriesData = {
+      "Normal Categories": normalCategories.map((category) => ({
+        title: category.title,
+        subCategories: category.subCategories.slice(0, 5).map((subCategory) => ({ 
+          id: subCategory._id,
+          title: subCategory.title,
+          image: subCategory.imageUrl,
+          bgColor: subCategory.bgColor,
+          borderColor: subCategory.borderColor,
+          blur: subCategory.blur || false,
+        })),
+      })),
+      "Exclusive Categories": exclusiveCategories.map((category) => ({
+        title: category.title,
+        subCategories: category.subCategories.slice(0, 5).map((subCategory) => ({ // Limit to 5 subcategories
+          id: subCategory._id,
+          title: subCategory.title,
+          image: subCategory.imageUrl,
+          bgColor: subCategory.bgColor,
+          borderColor: subCategory.borderColor,
+          blur: subCategory.blur || false,
+        })),
+      })),
+    };
+
+    res.status(200).json(categoriesData);
+  } catch (error) {
+    res.status(500).json(createErrorResponse("Server error", 500));
+  }
+};

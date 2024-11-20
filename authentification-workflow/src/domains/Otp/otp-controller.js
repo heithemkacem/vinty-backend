@@ -8,7 +8,6 @@ const { createErrorResponse } = require("../../Utils/Error-handle.js");
 exports.verifyOTP = async (req, res) => {
   try {
     const { email, otp, type } = req.body;
-    console.log(email, otp);
     const otpRecord = await OTP.findOne({ email, type });
     if (!otpRecord)
       return res
@@ -42,7 +41,7 @@ exports.resendOTP = async (req, res) => {
 
     // Check for existing OTP records before deletion
     const existingOtps = await OTP.find({
-      userId: user._id,
+      email: email,
       type: type,
     });
     if (existingOtps.length > 0) {
