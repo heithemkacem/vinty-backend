@@ -1,10 +1,7 @@
-const {VendingMachine} = require("../../models");
-const {Product} = require("../../models");
-const {SubCategory} = require("../../models");
-const {Category} = require("../../models");
+
+const {Product,SubCategory,Category,VendingMachineOwner,Client,VendingMachine} = require("../../models");
 const { createErrorResponse } = require("../../Utils/Error-handle");
-const {VendingMachineOwner} = require("../../models");
-const {Client} = require("../../models");
+
 
 const updateRecentSearch = async (clientId, searchTerm) => {
   try {
@@ -17,6 +14,7 @@ const updateRecentSearch = async (clientId, searchTerm) => {
     console.error("Error updating recent searches:", error);
   }
 };
+
 
 exports.createVendingMachine = async (req, res) => {
   try {
@@ -59,9 +57,7 @@ exports.createVendingMachine = async (req, res) => {
 
 exports.getAllVendingMachines = async (req, res) => {
   try {
-    const vendingMachines = await VendingMachine.find(
-      req.unblockedFilter
-    ).populate({
+    const vendingMachines = await VendingMachine.find.populate({
       path: "products",
       populate: [
         { path: "category", model: "Category" },
@@ -140,7 +136,9 @@ exports.deleteVendingMachine = async (req, res) => {
 };
 
 exports.searchVendingMachines = async (req, res) => {
-  const { searchTerm, clientId } = req.query;
+  const clientId = req.user.userData._id;
+  const { searchTerm } = req.body;
+
   if (!searchTerm || !clientId) {
     return res
       .status(400)
@@ -148,20 +146,13 @@ exports.searchVendingMachines = async (req, res) => {
   }
 
   try {
-    // Update recent search for the client
-    try {
-      await updateRecentSearch(clientId, searchTerm);
-    } catch (error) {
-      console.error("Error updating recent search:", error);
-      return res
-        .status(500)
-        .json({ message: "Error updating recent search", error });
-    }
+    // Update recent search
+    await updateRecentSearch(clientId, searchTerm);
 
     let categories, subCategories, products;
 
+    // Search categories, subcategories, and products
     try {
-      // Search for matching categories, subcategories, and products
       categories = await Category.find({ title: new RegExp(searchTerm, "i") });
       subCategories = await SubCategory.find({
         title: new RegExp(searchTerm, "i"),
@@ -174,12 +165,10 @@ exports.searchVendingMachines = async (req, res) => {
       });
     } catch (error) {
       console.error("Error finding search results:", error);
-      return res
-        .status(500)
-        .json({
-          message: "Error retrieving categories, subcategories, or products",
-          error,
-        });
+      return res.status(500).json({
+        message: "Error retrieving categories, subcategories, or products",
+        error,
+      });
     }
 
     // Collect IDs for search criteria
@@ -189,8 +178,8 @@ exports.searchVendingMachines = async (req, res) => {
 
     // Find vending machines matching the criteria and not blocked
     const vendingMachines = await VendingMachine.find({
-      ...req.unblockedFilter,
       $or: [
+        { name: new RegExp(searchTerm, "i") }, // Search by vending machine name
         { products: { $in: productIds } },
         { "products.category": { $in: categoryIds } },
         { "products.subCategory": { $in: subCategoryIds } },
@@ -209,17 +198,19 @@ exports.searchVendingMachines = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
+;
+
 
 exports.getAllVendingMachineCoordinates = async (req, res) => {
   try {
     const coordinates = await VendingMachine.find({}, "position");
-
     res.status(200).json({ coordinates });
   } catch (error) {
     console.error("Error fetching vending machine coordinates:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
+
 exports.toggleBlockVendingMachine = async (req, res) => {
   try {
     const { machineId } = req.params;

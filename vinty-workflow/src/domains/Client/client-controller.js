@@ -15,51 +15,66 @@ exports.updateRecentSearch = async (clientId, searchTerm) => {
 
 // Delete the whole search list for a client
 exports.deleteWholeSearchList = async (req, res) => {
-  const { clientId } = req.params;
+  const clientId = req.user.userData._id; 
+
   try {
     await Client.updateOne(
       { _id: clientId },
       { $set: { recent_search: [] } }
     );
-    res.status(200).json({ message: 'Search list deleted successfully' });
+    res.status(200).json({ message: "Search list deleted successfully" });
   } catch (error) {
-    console.error('Error deleting search list:', error);
-    res.status(500).json(createErrorResponse('Server error', 500));
+    console.error("Error deleting search list:", error);
+    res.status(500).json({ message: "Server error", error });
   }
 };
 
+
 // Delete a search item by name for a specific client
 exports.deleteSearchByName = async (req, res) => {
-  const { clientId, name } = req.params;
+  const clientId = req.user.userData._id; 
+  const { name } = req.body; 
+
   try {
     const result = await Client.updateOne(
       { _id: clientId },
       { $pull: { recent_search: name } }
     );
+
     if (result.modifiedCount === 0) {
-      return res.status(404).json(createErrorResponse('Search item not found', 404));
+      return res
+        .status(404)
+        .json({ message: "Search item not found" });
     }
-    res.status(200).json({ message: 'Search item deleted successfully' });
+
+    res.status(200).json({ message: "Search item deleted successfully" });
   } catch (error) {
-    console.error('Delete error:', error);
-    res.status(500).json(createErrorResponse('Server error', 500));
+    console.error("Delete error:", error);
+    res.status(500).json({ message: "Server error", error });
   }
 };
 
+
 // Get the whole search list for a client
 exports.getSearchList = async (req, res) => {
-  const { clientId } = req.params;
+  const clientId = req.user.userData._id;
+
   try {
     const client = await Client.findById(clientId);
+
     if (!client) {
-      return res.status(404).json(createErrorResponse('Client not found', 404));
+      return res
+        .status(404)
+        .json({ message: "Client not found" });
     }
+
     res.status(200).json({ recent_search: client.recent_search });
   } catch (error) {
-    console.error('Error fetching search list:', error);
-    res.status(500).json(createErrorResponse('Server error', 500));
+    console.error("Error fetching search list:", error);
+    res.status(500).json({ message: "Server error", error });
   }
 };
+
 
 exports.updateClient = async (req, res) => {
   try {
