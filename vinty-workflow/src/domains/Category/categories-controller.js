@@ -3,7 +3,7 @@ const { createErrorResponse } = require("../../Utils/Error-handle");
 exports.createCategory = async (req, res) => {
   try {
     const newCategory = new Category(req.body);
-    console.log(req.body);
+  
 
     await newCategory.save();
     res.status(201).json({
@@ -15,14 +15,36 @@ exports.createCategory = async (req, res) => {
   }
 };
 
-exports.getAllCategories = async (req, res) => {
+exports.getCategories = async (req, res) => {
   try {
-    const categories = await Category.find();
-    res.status(200).json(categories);
+    const categories = await Category.find()
+      .populate('subCategories')
+      .lean();
+
+    if (!categories || categories.length === 0) {
+      return res.status(404).json({ message: 'No categories found' });
+    }
+
+    const categoriesData = categories.map((category) => ({
+      title: category.title,
+      subCategories: category.subCategories.map((subCategory) => ({
+        id: subCategory._id,
+        title: subCategory.title,
+        image: subCategory.imageUrl,
+        bgColor: subCategory.bgColor,
+        borderColor: subCategory.borderColor,
+        blur: subCategory.blur || false,
+      })),
+    }));
+
+    res.status(200).json(categoriesData);
   } catch (error) {
-    res.status(500).json(createErrorResponse("Server error", 500));
+    console.error('Error fetching categories:', error);
+    res.status(500).json({ message: 'Failed to fetch categories' });
   }
 };
+
+
 
 exports.getCategoryById = async (req, res) => {
   try {
@@ -79,9 +101,30 @@ exports.getCategoriesByType = async (req, res) => {
         .json(createErrorResponse("Invalid category type", 400));
     }
 
-    const categories = await Category.find({ type });
-    res.status(200).json(categories);
+    const categories = await Category.find({ type })
+      .populate('subCategories')
+      .lean()
+      .limit(5);
+
+    if (!categories || categories.length === 0) {
+      return res.status(404).json(createErrorResponse("No categories found", 404));
+    }
+
+    const categoriesData = categories.map((category) => ({
+      title: category.title,
+      subCategories: category.subCategories.slice(0, 5).map((subCategory) => ({
+        id: subCategory._id,
+        title: subCategory.title,
+        image: subCategory.imageUrl,
+        bgColor: subCategory.bgColor,
+        borderColor: subCategory.borderColor,
+        blur: subCategory.blur || false,
+      })),
+    }));
+
+    res.status(200).json(categoriesData);
   } catch (error) {
     res.status(500).json(createErrorResponse("Server error", 500));
   }
 };
+
