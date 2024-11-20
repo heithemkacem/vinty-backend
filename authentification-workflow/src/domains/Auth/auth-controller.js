@@ -1,4 +1,4 @@
-const { Profile, Client, VendingMachineOwner,Admin } = require("../../models");
+const { Profile, Client, VendingMachineOwner, Admin } = require("../../models");
 
 const jwt = require("jsonwebtoken");
 const { OTP, sendVerificationEmail } = require("../../models/OTP/otp.js");
@@ -10,7 +10,6 @@ const { generateAndHashOTP } = require("../../Utils/Generate-otp.js");
 require("dotenv").config();
 const { createErrorResponse } = require("../../Utils/Error-handle.js");
 const mailSender = require("../../Utils/Mail-sender.js");
-
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
@@ -144,7 +143,6 @@ exports.register = async (req, res) => {
       }
     );
 
-
     res.status(201).json({
       ok: true,
       message: "Profile created successfully and OTP sent",
@@ -160,7 +158,6 @@ exports.register = async (req, res) => {
     res.status(500).json(createErrorResponse("Server error", 500));
   }
 };
-
 
 exports.login = async (req, res) => {
   try {
@@ -203,9 +200,8 @@ exports.login = async (req, res) => {
       }
     } else if (userRole === "vending-machine-owner") {
       user = await VendingMachineOwner.findOne({ profileId: profile._id });
-      console.log('hahaha')
+      console.log("hahaha");
       if (user) {
-
         userId = user._id;
         userData = user;
       }
@@ -213,7 +209,7 @@ exports.login = async (req, res) => {
       user = await Client.findOne({ profileId: profile._id });
       if (user) {
         userId = user._id;
-        userData = user; 
+        userData = user;
       }
     }
     console.log(user);
@@ -225,8 +221,10 @@ exports.login = async (req, res) => {
 
     const token = jwt.sign(
       {
-         userData
+        userData,
+        role: userRole,
       },
+
       process.env.JWT_SECRET,
       { expiresIn: "24h" }
     );
