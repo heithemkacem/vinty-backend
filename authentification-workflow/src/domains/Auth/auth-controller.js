@@ -38,22 +38,20 @@ exports.googleLogin = async (req, res) => {
       await user.save();
     }
 
-    // Retrieve or create associated client info
+    
     let client = await Client.findOne({ profileId: user._id });
     if (!client) {
       client = new Client({ profileId: user._id });
       await client.save();
     }
-
-    // Structure the user data the same way as in the normal login
     const userData = {
       _id: user._id,
       name: user.fullName,
       email: user.email,
-      // Add any other necessary fields
+     
     };
 
-    // Generate the JWT token with role and user data
+   
     const token = jwt.sign(
       {
         role: user.role,

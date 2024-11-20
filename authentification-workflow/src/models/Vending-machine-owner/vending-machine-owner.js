@@ -23,7 +23,13 @@ const vendingMachineOwnerSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'VendingMachine'
     }
-  ]
+  ],
+  role: { 
+    type: String,
+   
+    default: 'vending-machine-owner',
+  }
+
 }, { timestamps: true });
 
 // Hash the password before saving

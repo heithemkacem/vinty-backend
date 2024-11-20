@@ -15,11 +15,10 @@ const clientSchema = new mongoose.Schema({
       required: true,
       unique: true, 
     },
-    favorites: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'VendingMachine' 
-  }],
-
+    favorites: {
+      type: [String],
+      default: [],
+    },
     recent_search: {
       type: [String],
       default: [],
@@ -53,6 +52,10 @@ const clientSchema = new mongoose.Schema({
       type: Date,
       default: null,
     },
+    role: {
+      type: String,
+      default: 'user',
+    }
   }, { timestamps: true });
   
   module.exports = mongoose.model('Client', clientSchema);

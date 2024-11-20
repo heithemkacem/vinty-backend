@@ -52,6 +52,10 @@ const clientSchema = new mongoose.Schema({
       type: Date,
       default: null,
     },
+    role: {
+      type: String,
+      default: 'user',
+    }
   }, { timestamps: true });
   
   module.exports = mongoose.model('Client', clientSchema);
