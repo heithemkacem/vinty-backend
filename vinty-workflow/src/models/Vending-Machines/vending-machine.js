@@ -1,4 +1,3 @@
-// models/VendingMachine.js
 const mongoose = require('mongoose');
 
 const vendingMachineSchema = new mongoose.Schema({
@@ -10,10 +9,20 @@ const vendingMachineSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  open: {
-    type: [String],
+  openDays: {
+    type: [String], // Array of days
     enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
     default: []
+  },
+  openHours: {
+    start: {
+      type: String, 
+      required: true
+    },
+    end: {
+      type: String, 
+      required: true
+    }
   },
   position: {
     lat: { type: Number, required: true },

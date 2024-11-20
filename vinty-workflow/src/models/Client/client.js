@@ -15,10 +15,11 @@ const clientSchema = new mongoose.Schema({
       required: true,
       unique: true, 
     },
-    favorites: {
-      type: [String],
-      default: [],
-    },
+    favorites: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'VendingMachine' 
+  }],
+
     recent_search: {
       type: [String],
       default: [],

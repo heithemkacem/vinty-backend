@@ -20,10 +20,10 @@ const updateRecentSearch = async (clientId, searchTerm) => {
 
 exports.createVendingMachine = async (req, res) => {
   try {
-    const { name, ownerId, location, position, open } = req.body;
+    const { name, ownerId, location, position, openDays, openHours } = req.body;
 
-    const categories = req.body.categories || [];
-    const subCategories = req.body.subCategories || [];
+
+  
     const products = req.body.products || [];
 
     // Verify owner
@@ -35,12 +35,12 @@ exports.createVendingMachine = async (req, res) => {
     const newVendingMachine = new VendingMachine({
       name,
       location,
+      openDays,  
+      openHours, 
       position,
-      categories,
-      subCategories,
-      products,
-      open,
       owner: ownerId,
+      products : products
+    
     });
 
     await newVendingMachine.save();

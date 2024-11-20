@@ -95,3 +95,87 @@ exports.deleteClient = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+
+
+exports.addToFavorites = async (req, res) => {
+  try {
+    const { vendingMachineId } = req.body; 
+    const clientId = req.user.userData._id
+    
+ 
+    const client = await Client.findById(clientId);
+    if (!client) {
+      return res.status(404).json({ message: 'Client not found' });
+    }
+    
+    
+    if (client.favorites.includes(vendingMachineId)) {
+      return res.status(400).json({ message: 'Vending machine already in favorites' });
+    }
+    
+    // Add the vending machine to the favorites array
+    client.favorites.push(vendingMachineId);
+    await client.save();
+    
+    return res.status(200).json({ message: 'Vending machine added to favorites', client });
+  } catch (err) {
+    return res.status(500).json({ message: 'Error adding to favorites', error: err.message });
+  }
+};
+
+
+
+exports.getFavorites = async (req, res) => {
+  try {
+    const clientId = req.user.userData._id;  
+    const client = await Client.findById(clientId)
+    .populate({
+      path: 'favorites',
+      select: 'name location position', 
+    });
+
+    
+    if (!client) {
+      return res.status(404).json({ message: 'Client not found' });
+    }
+
+    return res.status(200).json({
+      message: 'Favorites retrieved successfully',
+      favorites: client.favorites,  
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
+
+exports.removeFromFavorites = async (req, res) => {
+  try {
+    const { vendingMachineId } = req.body;  
+    const clientId = req.user.userData._id
+    
+  
+    const client = await Client.findById(clientId);
+    if (!client) {
+      return res.status(404).json({ message: 'Client not found' });
+    }
+    
+
+    if (!client.favorites.includes(vendingMachineId)) {
+      return res.status(400).json({ message: 'Vending machine not in favorites' });
+    }
+    
+    
+    client.favorites = client.favorites.filter((id) => id.toString() !== vendingMachineId);
+    await client.save();
+    
+    return res.status(200).json({ message: 'Vending machine removed from favorites', client });
+  } catch (err) {
+    return res.status(500).json({ message: 'Error removing from favorites', error: err.message });
+  }
+};
+
+
