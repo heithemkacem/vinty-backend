@@ -24,6 +24,7 @@ exports.googleLogin = async (req, res) => {
     const { data: profile } = await axios.get(
       `https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`
     );
+    
     let user = await Profile.findOne({ email: profile.email });
 
     if (!user) {
@@ -44,17 +45,24 @@ exports.googleLogin = async (req, res) => {
       await client.save();
     }
 
-    // Generate and send JWT
+    // Structure the user data the same way as in the normal login
+    const userData = {
+      _id: user._id,
+      name: user.fullName,
+      email: user.email,
+      // Add any other necessary fields
+    };
+
+    // Generate the JWT token with role and user data
     const token = jwt.sign(
       {
-        id: user._id,
-        email: user.email,
         role: user.role,
-        source: user.source,
+        userData, 
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "24h" } 
     );
+
     res.status(200).json({
       token,
       ok: true,
@@ -80,6 +88,7 @@ exports.googleLogin = async (req, res) => {
     res.status(500).json(createErrorResponse("Server error", 500));
   }
 };
+
 
 exports.register = async (req, res) => {
   try {
