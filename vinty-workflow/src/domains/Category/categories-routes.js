@@ -1,13 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const categoryController = require("./categories-controller");
-const authorize = require('../../middleware/authorize')
+const authorize = require("../../middleware/authorize");
+const auth = require("../../middleware/auth");
 
-router.use(authorize("admin"));
+router.post("/categories", auth, categoryController.createCategory);
 
-router.post("/categories", categoryController.createCategory);
-
-router.get("/categories", categoryController.getAllCategories);
+router.get("/categories", auth, categoryController.getAllCategories);
 
 router.get("/categories/one/:id", categoryController.getCategoryById);
 
