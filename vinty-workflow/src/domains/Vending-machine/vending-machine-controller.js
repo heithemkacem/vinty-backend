@@ -20,7 +20,6 @@ exports.createVendingMachine = async (req, res) => {
   try {
     const {
       name,
-      ownerId,
       location,
       position,
       openDays,
@@ -30,13 +29,16 @@ exports.createVendingMachine = async (req, res) => {
       products = []
     } = req.body;
 
-    // Verify owner
+    // Extract ownerId from req.user
+    const ownerId = req.user.userData._id;
+
+
     const owner = await VendingMachineOwner.findById(ownerId);
     if (!owner) {
       return res.status(404).json({ message: "Owner not found" });
     }
 
-    // Validate open hours if not always open
+    
     if (!alwaysOpen) {
       if (!openHours || !openHours.start || !openHours.end) {
         return res.status(400).json({ message: "Open hours are required if the vending machine is not always open." });
@@ -49,9 +51,9 @@ exports.createVendingMachine = async (req, res) => {
       location,
       position,
       openDays,
-      openHours: alwaysOpen ? undefined : openHours, // Only set openHours if not always open
+      openHours: alwaysOpen ? undefined : openHours, 
       alwaysOpen: alwaysOpen || false,
-      paymentMethods: paymentMethods || ['Cash'], // Default to 'Cash' if no methods are provided
+      paymentMethods: paymentMethods || ['Cash'], 
       owner: ownerId,
       products
     });
@@ -72,6 +74,7 @@ exports.createVendingMachine = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
+
 
 
 exports.getAllVendingMachines = async (req, res) => {
