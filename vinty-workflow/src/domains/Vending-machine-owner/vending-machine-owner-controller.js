@@ -42,13 +42,12 @@ exports.createProduct = async (req, res) => {
       vendingMachineId,
     } = req.body;
 
-    // Check if the required fields are provided
+   
     if (
       !name ||
       !subName ||
       !price ||
       !image ||
-      !categoryId ||
       !vendingMachineId
     ) {
       return res
@@ -56,7 +55,6 @@ exports.createProduct = async (req, res) => {
         .json({ message: "All required fields must be provided." });
     }
 
-    // Create a new product, associating it with a category and optionally a subcategory
     const newProduct = new Product({
       name,
       subName,

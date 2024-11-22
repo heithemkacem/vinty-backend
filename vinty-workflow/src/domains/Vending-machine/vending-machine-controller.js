@@ -57,7 +57,7 @@ exports.createVendingMachine = async (req, res) => {
 
 exports.getAllVendingMachines = async (req, res) => {
   try {
-    const vendingMachines = await VendingMachine.find.populate({
+    const vendingMachines = await VendingMachine.find().populate({
       path: "products",
       populate: [
         { path: "category", model: "Category" },
