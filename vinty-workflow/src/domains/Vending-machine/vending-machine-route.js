@@ -5,7 +5,7 @@ const auth = require('../../middleware/auth');
 const authorize = require('../../middleware/authorize');
 
 // Vending machine management (CRUD)
-router.post('/', auth, authorize('admin'), vendingMachineController.createVendingMachine); 
+router.post('/', auth, vendingMachineController.createVendingMachine); 
 router.get('/', auth, vendingMachineController.getAllVendingMachines);
 router.get('/:id', auth, vendingMachineController.getVendingMachineById); 
 router.put('/:id', auth, authorize('admin'), vendingMachineController.updateVendingMachine);

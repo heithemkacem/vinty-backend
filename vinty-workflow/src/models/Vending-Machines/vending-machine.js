@@ -17,12 +17,16 @@ const vendingMachineSchema = new mongoose.Schema({
   openHours: {
     start: {
       type: String, 
-      required: true
+      required: function () { return !this.alwaysOpen; } // Required if not always open
     },
     end: {
       type: String, 
-      required: true
+      required: function () { return !this.alwaysOpen; } // Required if not always open
     }
+  },
+  alwaysOpen: {
+    type: Boolean,
+    default: false // If true, machine is always open
   },
   position: {
     lat: { type: Number, required: true },
@@ -38,6 +42,11 @@ const vendingMachineSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'VendingMachineOwner',
     required: true
+  },
+  paymentMethods: {
+    type: [String], 
+    enum: ['Cash', 'Credit Card', 'Debit Card', 'Mobile Payment'],
+    default: ['Cash']
   }
 }, { timestamps: true });
 

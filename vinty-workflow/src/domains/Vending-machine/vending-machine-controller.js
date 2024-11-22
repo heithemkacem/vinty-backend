@@ -18,11 +18,17 @@ const updateRecentSearch = async (clientId, searchTerm) => {
 
 exports.createVendingMachine = async (req, res) => {
   try {
-    const { name, ownerId, location, position, openDays, openHours } = req.body;
-
-
-  
-    const products = req.body.products || [];
+    const {
+      name,
+      ownerId,
+      location,
+      position,
+      openDays,
+      openHours,
+      alwaysOpen,
+      paymentMethods,
+      products = []
+    } = req.body;
 
     // Verify owner
     const owner = await VendingMachineOwner.findById(ownerId);
@@ -30,19 +36,30 @@ exports.createVendingMachine = async (req, res) => {
       return res.status(404).json({ message: "Owner not found" });
     }
 
+    // Validate open hours if not always open
+    if (!alwaysOpen) {
+      if (!openHours || !openHours.start || !openHours.end) {
+        return res.status(400).json({ message: "Open hours are required if the vending machine is not always open." });
+      }
+    }
+
+    // Create the vending machine
     const newVendingMachine = new VendingMachine({
       name,
       location,
-      openDays,  
-      openHours, 
       position,
+      openDays,
+      openHours: alwaysOpen ? undefined : openHours, // Only set openHours if not always open
+      alwaysOpen: alwaysOpen || false,
+      paymentMethods: paymentMethods || ['Cash'], // Default to 'Cash' if no methods are provided
       owner: ownerId,
-      products : products
-    
+      products
     });
 
+    // Save the vending machine
     await newVendingMachine.save();
 
+    // Add the vending machine to the owner's list
     owner.vendingMachines.push(newVendingMachine._id);
     await owner.save();
 
@@ -51,9 +68,11 @@ exports.createVendingMachine = async (req, res) => {
       vendingMachine: newVendingMachine,
     });
   } catch (error) {
+    console.error("Error creating vending machine:", error.message);
     res.status(500).json({ message: "Server error", error });
   }
 };
+
 
 exports.getAllVendingMachines = async (req, res) => {
   try {

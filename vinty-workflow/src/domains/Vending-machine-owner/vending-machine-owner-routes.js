@@ -8,7 +8,7 @@ router.get(
   "/:ownerId",
   vendingMachineOwnerController.getVendingMachinesByOwner
 );
-router.post("/product/", vendingMachineOwnerController.createProduct);
+router.post("/product/", vendingMachineOwnerController.addProductToVendingMachine);
 router.delete(
   "/remove/:vendingMachineId/:productId",
   vendingMachineOwnerController.removeProductFromVendingMachine
