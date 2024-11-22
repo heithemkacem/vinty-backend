@@ -3,13 +3,10 @@ const router = express.Router();
 const clientController = require("./client-controller");
 const auth = require("../../middleware/auth");
 
-router.delete("/:clientId/search-list", clientController.deleteWholeSearchList);
+router.delete("/search-list", auth, clientController.deleteWholeSearchList);
 
-router.delete(
-  "/:clientId/search-list/:name",
-  clientController.deleteSearchByName
-);
-router.get("/:clientId/search-list", clientController.getSearchList);
+router.delete("/search-list/item", auth, clientController.deleteSearchByName);
+router.get("/search-list", auth, clientController.getSearchList);
 router.put("/:id", clientController.updateClient);
 router.delete("/:id", clientController.deleteClient);
 router.post("/favorites/add", auth, clientController.addToFavorites);

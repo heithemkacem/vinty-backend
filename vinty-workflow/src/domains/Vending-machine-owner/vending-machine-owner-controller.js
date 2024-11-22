@@ -30,60 +30,42 @@ exports.getVendingMachinesByOwner = async (req, res) => {
   }
 };
 
-exports.createProduct = async (req, res) => {
+exports.addProductToVendingMachine = async (req, res) => {
   try {
-    const {
-      name,
-      subName,
-      price,
-      image,
-      categoryId,
-      subCategoryId,
-      vendingMachineId,
-    } = req.body;
+    const { productId, vendingMachineId } = req.body;
 
-    // Check if the required fields are provided
-    if (
-      !name ||
-      !subName ||
-      !price ||
-      !image ||
-      !categoryId ||
-      !vendingMachineId
-    ) {
+    // Validate input
+    if (!productId || !vendingMachineId) {
       return res
         .status(400)
-        .json({ message: "All required fields must be provided." });
+        .json({ message: "Product ID and Vending Machine ID must be provided." });
     }
 
-    // Create a new product, associating it with a category and optionally a subcategory
-    const newProduct = new Product({
-      name,
-      subName,
-      price,
-      image,
-      category: categoryId,
-      subCategory: subCategoryId || null,
-    });
-
-    await newProduct.save();
+    // Find the vending machine
     const vendingMachine = await VendingMachine.findById(vendingMachineId);
     if (!vendingMachine) {
       return res.status(404).json({ message: "Vending Machine not found" });
     }
 
-    vendingMachine.products.push(newProduct._id);
+    // Check if the product already exists
+    if (vendingMachine.products.includes(productId)) {
+      return res.status(400).json({ message: "Product already exists in the vending machine." });
+    }
+
+    // Add the product to the vending machine
+    vendingMachine.products.push(productId);
     await vendingMachine.save();
 
-    res.status(201).json({
-      message: "Product created and added to vending machine successfully",
-      product: newProduct,
+    res.status(200).json({
+      message: "Product added to vending machine successfully",
+      vendingMachine,
     });
   } catch (error) {
-    console.error("Error creating product:", error.message);
+    console.error("Error adding product to vending machine:", error.message);
     res.status(500).json({ message: "Server error" });
   }
 };
+
 exports.removeProductFromVendingMachine = async (req, res) => {
   try {
     const { vendingMachineId, productId } = req.params;
