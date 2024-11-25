@@ -88,7 +88,7 @@ exports.getAllVendingMachines = async (req, res) => {
 exports.getVendingMachineById = async (req, res) => {
   try {
     const vendingMachine = await VendingMachine.findOne({
-      _id: req.params.id,
+      _id: req.body.id,
     }).populate({
       path: "products",
       populate: [
@@ -110,43 +110,62 @@ exports.getVendingMachineById = async (req, res) => {
 
 exports.updateVendingMachine = async (req, res) => {
   try {
+    const { id, ...updateData } = req.body;
+
+    if (!id) {
+      return res
+        .status(400)
+        .json({ message: "Vending Machine ID is required" });
+    }
+
     const vendingMachine = await VendingMachine.findByIdAndUpdate(
-      req.params.id,
-      req.body,
+      id,
+      updateData,
       { new: true }
     );
+
     if (!vendingMachine) {
       return res
         .status(404)
-        .json(createErrorResponse("Vending Machine not found", 404));
+        .json({ message: "Vending Machine not found" });
     }
-    res
-      .status(200)
-      .json({
-        message: "Vending Machine updated successfully",
-        vendingMachine,
-      });
+
+    res.status(200).json({
+      message: "Vending Machine updated successfully",
+      vendingMachine,
+    });
   } catch (error) {
-    res.status(500).json(createErrorResponse("Server error", 500));
+    console.error("Error updating vending machine:", error.message);
+    res.status(500).json({ message: "Server error", error });
   }
 };
 
-// Delete a vending machine
+
 exports.deleteVendingMachine = async (req, res) => {
   try {
-    const vendingMachine = await VendingMachine.findByIdAndDelete(
-      req.params.id
-    );
+    const { id } = req.body;
+
+    if (!id) {
+      return res
+        .status(400)
+        .json({ message: "Vending Machine ID is required" });
+    }
+
+    const vendingMachine = await VendingMachine.findByIdAndDelete(id);
+
     if (!vendingMachine) {
       return res
         .status(404)
-        .json(createErrorResponse("Vending Machine not found", 404));
+        .json({ message: "Vending Machine not found" });
     }
+
     res.status(200).json({ message: "Vending Machine deleted successfully" });
   } catch (error) {
-    res.status(500).json(createErrorResponse("Server error", 500));
+    console.error("Error deleting vending machine:", error.message);
+    res.status(500).json({ message: "Server error", error });
   }
 };
+
 
 exports.searchVendingMachines = async (req, res) => {
   const clientId = req.user.userData._id;
@@ -226,30 +245,42 @@ exports.getAllVendingMachineCoordinates = async (req, res) => {
 
 exports.toggleBlockVendingMachine = async (req, res) => {
   try {
-    const { machineId } = req.params;
-    const machine = await VendingMachine.findById(machineId);
-    if (!machine)
-      return res.status(404).json({ message: "Vending machine not found" });
+    const { id } = req.body;
 
-    machine.blocked = !machine.blocked;
-    await machine.save();
-    res
-      .status(200)
-      .json({
-        message: `Vending machine ${machine.blocked ? "blocked" : "unblocked"}`,
-        machine,
-      });
+    if (!id) {
+      return res.status(400).json({ message: "Vending machine ID is required" });
+    }
+
+    const vendingMachine = await VendingMachine.findById(id);
+
+    if (!vendingMachine) {
+      return res.status(404).json({ message: "Vending machine not found" });
+    }
+
+    vendingMachine.isBlocked = !vendingMachine.isBlocked;
+    await vendingMachine.save();
+
+    res.status(200).json({
+      message: `Vending machine is now ${vendingMachine.isBlocked ? "blocked" : "unblocked"}`,
+      vendingMachine,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    console.error("Error toggling block status:", error.message);
+    res.status(500).json({ message: "Server error", error });
   }
 };
 
+
 exports.updateVendingMachineLocation = async (req, res) => {
   try {
-    const { id } = req.params; 
-    const { location } = req.body; 
-    if (!location) {
-      return res.status(400).json({ message: "Location is required" });
+    const { id, location } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ message: "Vending machine ID is required" });
+    }
+
+    if (!location || typeof location.lat !== 'number' || typeof location.long !== 'number') {
+      return res.status(400).json({ message: "Valid location with 'lat' and 'long' is required" });
     }
 
     const vendingMachine = await VendingMachine.findByIdAndUpdate(
@@ -271,20 +302,24 @@ exports.updateVendingMachineLocation = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
+
 exports.addProductsToVendingMachine = async (req, res) => {
   try {
-    const { id } = req.params; // ID of the vending machine
-    const { products } = req.body; // Array of product IDs to add
+    const { id, products } = req.body;
 
-    if (!products || !Array.isArray(products)) {
-      return res.status(400).json({ message: "Products must be an array" });
+    if (!id) {
+      return res.status(400).json({ message: "Vending machine ID is required" });
+    }
+
+    if (!Array.isArray(products) || products.length === 0) {
+      return res.status(400).json({ message: "Products must be a non-empty array" });
     }
 
     const vendingMachine = await VendingMachine.findById(id);
+
     if (!vendingMachine) {
       return res.status(404).json({ message: "Vending machine not found" });
     }
-
 
     vendingMachine.products.push(...products);
     await vendingMachine.save();
