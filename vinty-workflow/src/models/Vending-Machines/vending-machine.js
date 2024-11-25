@@ -6,8 +6,7 @@ const vendingMachineSchema = new mongoose.Schema({
     required: true
   },
   location: {
-    type: String,
-    required: true
+    type: String
   },
   openDays: {
     type: [String], // Array of days
@@ -17,20 +16,20 @@ const vendingMachineSchema = new mongoose.Schema({
   openHours: {
     start: {
       type: String, 
-      required: function () { return !this.alwaysOpen; } // Required if not always open
+      required: function () { return !this.alwaysOpen; } 
     },
     end: {
       type: String, 
-      required: function () { return !this.alwaysOpen; } // Required if not always open
+      required: function () { return !this.alwaysOpen; } 
     }
   },
   alwaysOpen: {
     type: Boolean,
-    default: false // If true, machine is always open
+    default: false 
   },
   position: {
-    lat: { type: Number, required: true },
-    long: { type: Number, required: true }
+    lat: { type: Number },
+    long: { type: Number }
   },
   products: [
     {

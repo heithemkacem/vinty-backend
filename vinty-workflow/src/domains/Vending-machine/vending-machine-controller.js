@@ -20,48 +20,40 @@ exports.createVendingMachine = async (req, res) => {
   try {
     const {
       name,
-      location,
-      position,
+      description,
+      paymentMethods = ['Cash'], // Default to 'Cash' if not provided
       openDays,
       openHours,
       alwaysOpen,
-      paymentMethods,
-      products = []
     } = req.body;
 
-    // Extract ownerId from req.user
+    // Validate the owner
     const ownerId = req.user.userData._id;
-
-
     const owner = await VendingMachineOwner.findById(ownerId);
     if (!owner) {
       return res.status(404).json({ message: "Owner not found" });
     }
 
-    
-    if (!alwaysOpen) {
-      if (!openHours || !openHours.start || !openHours.end) {
-        return res.status(400).json({ message: "Open hours are required if the vending machine is not always open." });
-      }
+    // Validate open hours if not always open
+    if (!alwaysOpen && (!openHours || !openHours.start || !openHours.end)) {
+      return res.status(400).json({ message: "Open hours are required if the vending machine is not always open." });
     }
 
-    // Create the vending machine
+    // Create a vending machine with the simplified fields
     const newVendingMachine = new VendingMachine({
       name,
-      location,
-      position,
+      description,
+      paymentMethods,
       openDays,
-      openHours: alwaysOpen ? undefined : openHours, 
+      openHours: alwaysOpen ? undefined : openHours,
       alwaysOpen: alwaysOpen || false,
-      paymentMethods: paymentMethods || ['Cash'], 
       owner: ownerId,
-      products
     });
 
     // Save the vending machine
     await newVendingMachine.save();
 
-    // Add the vending machine to the owner's list
+    // Add to the owner's vending machine list
     owner.vendingMachines.push(newVendingMachine._id);
     await owner.save();
 
@@ -74,7 +66,6 @@ exports.createVendingMachine = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
-
 
 
 exports.getAllVendingMachines = async (req, res) => {
@@ -250,5 +241,60 @@ exports.toggleBlockVendingMachine = async (req, res) => {
       });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+exports.updateVendingMachineLocation = async (req, res) => {
+  try {
+    const { id } = req.params; 
+    const { location } = req.body; 
+    if (!location) {
+      return res.status(400).json({ message: "Location is required" });
+    }
+
+    const vendingMachine = await VendingMachine.findByIdAndUpdate(
+      id,
+      { position : location },
+      { new: true }
+    );
+
+    if (!vendingMachine) {
+      return res.status(404).json({ message: "Vending machine not found" });
+    }
+
+    res.status(200).json({
+      message: "Location updated successfully",
+      vendingMachine,
+    });
+  } catch (error) {
+    console.error("Error updating location:", error.message);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+exports.addProductsToVendingMachine = async (req, res) => {
+  try {
+    const { id } = req.params; // ID of the vending machine
+    const { products } = req.body; // Array of product IDs to add
+
+    if (!products || !Array.isArray(products)) {
+      return res.status(400).json({ message: "Products must be an array" });
+    }
+
+    const vendingMachine = await VendingMachine.findById(id);
+    if (!vendingMachine) {
+      return res.status(404).json({ message: "Vending machine not found" });
+    }
+
+
+    vendingMachine.products.push(...products);
+    await vendingMachine.save();
+
+    res.status(200).json({
+      message: "Products added successfully",
+      vendingMachine,
+    });
+  } catch (error) {
+    console.error("Error adding products:", error.message);
+    res.status(500).json({ message: "Server error", error });
   }
 };

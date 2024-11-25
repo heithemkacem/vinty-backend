@@ -33,8 +33,6 @@ exports.getVendingMachinesByOwner = async (req, res) => {
 exports.addProductToVendingMachine = async (req, res) => {
   try {
     const { productId, vendingMachineId } = req.body;
-
-    // Validate input
     if (!productId || !vendingMachineId) {
       return res
         .status(400)
