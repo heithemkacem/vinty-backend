@@ -33,9 +33,9 @@ const vendingMachineSchema = new mongoose.Schema({
   },
   products: [
     {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Product'
-    }
+      productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+      price: { type: Number },
+    },
   ],
   owner: {
     type: mongoose.Schema.Types.ObjectId,

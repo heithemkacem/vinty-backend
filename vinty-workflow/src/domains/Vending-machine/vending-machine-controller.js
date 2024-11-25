@@ -303,6 +303,8 @@ exports.updateVendingMachineLocation = async (req, res) => {
   }
 };
 
+
+
 exports.addProductsToVendingMachine = async (req, res) => {
   try {
     const { id, products } = req.body;
@@ -321,6 +323,19 @@ exports.addProductsToVendingMachine = async (req, res) => {
       return res.status(404).json({ message: "Vending machine not found" });
     }
 
+    // Loop through each product to set the price from the Product model
+    for (let product of products) {
+      const existingProduct = await Product.findById(product.productId);
+      
+      if (!existingProduct) {
+        return res.status(404).json({ message: `Product with ID ${product.productId} not found` });
+      }
+
+      // Overwrite the price with the value from the Product model
+      product.price = existingProduct.price;
+    }
+
+    // Push the updated products with correct price
     vendingMachine.products.push(...products);
     await vendingMachine.save();
 
@@ -330,6 +345,46 @@ exports.addProductsToVendingMachine = async (req, res) => {
     });
   } catch (error) {
     console.error("Error adding products:", error.message);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+exports.setProductPrices = async (req, res) => {
+  try {
+    const { id, prices } = req.body; 
+
+    if (!id || !prices) {
+      return res.status(400).json({ message: "Vending machine ID and prices are required" });
+    }
+
+    const vendingMachine = await VendingMachine.findById(id);
+
+    if (!vendingMachine) {
+      return res.status(404).json({ message: "Vending machine not found" });
+    }
+
+  
+    vendingMachine.products = vendingMachine.products.map(product => {
+      if (prices[product.productId]) {
+        product.price = prices[product.productId]; 
+      }
+      return product;
+    });
+
+    await vendingMachine.save();
+
+    const sanitizedProducts = vendingMachine.products.map(product => ({
+      productId: product.productId,
+      price: product.price,
+      _id: product._id, 
+    }));
+
+    res.status(200).json({
+      message: "Product prices updated successfully",
+      products: sanitizedProducts,
+    });
+  } catch (error) {
+    console.error("Error updating product prices:", error.message);
     res.status(500).json({ message: "Server error", error });
   }
 };
