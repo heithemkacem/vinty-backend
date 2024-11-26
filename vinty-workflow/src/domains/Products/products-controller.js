@@ -68,15 +68,27 @@ exports.deleteProduct = async (req, res) => {
   }
 };
 exports.getProductsByVendingMachineId = async (req, res) => {
-    try {
-      const vendingMachine = await VendingMachine.findById(req.params.id).populate('products');
-      if (!vendingMachine) {
-        return res.status(404).json(createErrorResponse('Vending machine not found', 404));
-      }
-      res.status(200).json(vendingMachine.products);
-    } catch (error) {
-      res.status(500).json(createErrorResponse('Server error', 500));
+  try {
+    const { id } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ message: "Vending machine ID is required" });
     }
+
+    const vendingMachine = await VendingMachine.findById(id).populate('products.productId', 'name subName price');
+
+    if (!vendingMachine) {
+      return res.status(404).json({ message: "Vending machine not found" });
+    }
+
+    res.status(200).json({
+      message: "Products retrieved successfully",
+      products: vendingMachine.products,
+    });
+  } catch (error) {
+    console.error("Error fetching products:", error.message);
+    res.status(500).json({ message: "Server error", error });
+  }
   };
   exports.getProductsForCategory = async (req, res) => {
     try {

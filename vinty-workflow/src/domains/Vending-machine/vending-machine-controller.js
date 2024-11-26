@@ -323,7 +323,6 @@ exports.addProductsToVendingMachine = async (req, res) => {
       return res.status(404).json({ message: "Vending machine not found" });
     }
 
-    // Loop through each product to set the price from the Product model
     for (let product of products) {
       const existingProduct = await Product.findById(product.productId);
       
@@ -331,11 +330,9 @@ exports.addProductsToVendingMachine = async (req, res) => {
         return res.status(404).json({ message: `Product with ID ${product.productId} not found` });
       }
 
-      // Overwrite the price with the value from the Product model
+     
       product.price = existingProduct.price;
     }
-
-    // Push the updated products with correct price
     vendingMachine.products.push(...products);
     await vendingMachine.save();
 
