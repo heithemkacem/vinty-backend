@@ -75,7 +75,7 @@ exports.getProductsByVendingMachineId = async (req, res) => {
       return res.status(400).json({ message: "Vending machine ID is required" });
     }
 
-    const vendingMachine = await VendingMachine.findById(id).populate('products.productId', 'name subName price');
+    const vendingMachine = await VendingMachine.findById(id).populate('products.productId', 'name subName price image');
 
     if (!vendingMachine) {
       return res.status(404).json({ message: "Vending machine not found" });
@@ -92,7 +92,7 @@ exports.getProductsByVendingMachineId = async (req, res) => {
   };
   exports.getProductsForCategory = async (req, res) => {
     try {
-      const { categoryId } = req.params;
+      const { categoryId } = req.body;
       const category = await Category.findById(categoryId);
       if (!category) {
         return res.status(404).json({ message: 'Category not found' });

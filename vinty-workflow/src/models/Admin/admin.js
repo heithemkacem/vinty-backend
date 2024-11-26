@@ -30,7 +30,8 @@ const adminSchema = new mongoose.Schema({
   role: { 
     type: String,
     default: 'admin',
-  }
+  },
+  searchList: { type: [String], default: [] },
 
 }, { timestamps: true });
 

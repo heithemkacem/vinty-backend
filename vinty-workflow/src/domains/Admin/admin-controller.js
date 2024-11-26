@@ -69,8 +69,8 @@ exports.getAllOwnersWithVendingMachineCount = async (req, res) => {
   }
 };
 exports.searchOwnerByNameOrEmail = async (req, res) => {
-  const { query } = req.query;
-  const { adminId } = req.params;
+  const { query } = req.body;
+  const adminId = req.user.userData._id; 
   if (!query) {
     return res
       .status(400)
@@ -90,7 +90,7 @@ exports.searchOwnerByNameOrEmail = async (req, res) => {
       if (!admin) {
         return res.status(404).json({ ok: false, message: "Admin not found" });
       }
-
+console.log(admin)
       if (!admin.searchList.includes(query)) {
         admin.searchList.push(query);
         await admin.save();
@@ -105,7 +105,7 @@ exports.searchOwnerByNameOrEmail = async (req, res) => {
 };
 
 exports.viewAdminSearchList = async (req, res) => {
-  const { adminId } = req.params;
+  const adminId = req.user.userData._id; 
   if (!adminId) {
     return res.status(400).json({ ok: false, message: "Admin ID is required" });
   }
@@ -124,7 +124,7 @@ exports.viewAdminSearchList = async (req, res) => {
 };
 
 exports.deleteAdminSearchListItem = async (req, res) => {
-  const { adminId } = req.params;
+  const adminId = req.user.userData._id; 
   const { item } = req.body;
 
   if (!adminId || !item) {
@@ -155,7 +155,7 @@ exports.deleteAdminSearchListItem = async (req, res) => {
 };
 
 exports.clearAdminSearchList = async (req, res) => {
-  const { adminId } = req.params;
+  const adminId = req.user.userData._id; 
 
   if (!adminId) {
     return res.status(400).json({ ok: false, message: "Admin ID is required" });
@@ -181,7 +181,7 @@ exports.clearAdminSearchList = async (req, res) => {
   }
 };
 exports.deleteVendingMachineOwner = async (req, res) => {
-  const { ownerId } = req.params; // ID of the owner to delete
+  const { ownerId } = req.body;
 
   if (!ownerId) {
     return res.status(400).json({ ok: false, message: "Owner ID is required" });
@@ -245,21 +245,26 @@ exports.updateVendingMachineOwner = async (req, res) => {
   }
 };
 exports.updateAdmin = async (req, res) => {
+  const adminId = req.user.userData._id; 
+  const updateData = req.body; 
+
   try {
-    const { id } = req.params;
-    const updates = req.body;
-    const admin = await Admin.findByIdAndUpdate(id, updates, { new: true });
-    if (!admin) return res.status(404).json({ message: 'Admin not found' });
-    res.status(200).json(admin);
+    const updatedAdmin = await Admin.findByIdAndUpdate(adminId, updateData, { new: true });
+    if (!updatedAdmin) {
+      return res.status(404).json({ ok: false, message: "Admin not found" });
+    }
+    res.status(200).json({ ok: true, admin: updatedAdmin });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error updating admin:", error.message);
+    res.status(500).json({ ok: false, message: "Server error" });
   }
 };
+
 
 // Delete an Admin
 exports.deleteAdmin = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.body;
     const admin = await Admin.findByIdAndDelete(id);
     if (!admin) return res.status(404).json({ message: 'Admin not found' });
     res.status(200).json({ message: 'Admin deleted successfully' });

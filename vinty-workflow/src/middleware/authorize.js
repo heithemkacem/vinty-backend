@@ -18,8 +18,6 @@ const auth = (requiredRole = null) => (req, res, next) => {
         .status(403)
         .json({ message: `Access denied: Only ${requiredRole}s allowed` });
     }
-
-    console.log("Authenticated User:", req.user);
     next();
   } catch (error) {
     console.error("Token verification failed:", error.message);
