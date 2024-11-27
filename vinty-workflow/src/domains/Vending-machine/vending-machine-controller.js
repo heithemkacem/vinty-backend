@@ -273,30 +273,38 @@ exports.toggleBlockVendingMachine = async (req, res) => {
 
 exports.updateVendingMachineLocation = async (req, res) => {
   try {
-    const { id, location } = req.body;
+    const { id, position ,location} = req.body;
 
     if (!id) {
       return res.status(400).json({ message: "Vending machine ID is required" });
     }
 
-    if (!location || typeof location.lat !== 'number' || typeof location.long !== 'number') {
+    if (!position || typeof position.lat !== 'number' || typeof position.long !== 'number') {
       return res.status(400).json({ message: "Valid location with 'lat' and 'long' is required" });
     }
 
     const vendingMachine = await VendingMachine.findByIdAndUpdate(
       id,
-      { position : location },
+      { position: position, location: location },
       { new: true }
     );
-
+    
     if (!vendingMachine) {
       return res.status(404).json({ message: "Vending machine not found" });
     }
-
+    
+   
+    const vendingMachineData = vendingMachine.toObject();
+    vendingMachineData.products = vendingMachineData.products.map(product => {
+      const { buffer, ...rest } = product;
+      return rest;
+    });
+    
     res.status(200).json({
       message: "Location updated successfully",
-      vendingMachine,
+      vendingMachine: vendingMachineData,
     });
+    
   } catch (error) {
     console.error("Error updating location:", error.message);
     res.status(500).json({ message: "Server error", error });
