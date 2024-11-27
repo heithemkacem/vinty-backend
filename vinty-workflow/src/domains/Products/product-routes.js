@@ -11,5 +11,5 @@ router.put("/:id", productController.updateProduct);
 router.delete("/:id", productController.deleteProduct);
 router.get("/products/machine", productController.getProductsByVendingMachineId);
 router.get("/categories/products", productController.getProductsForCategory);
-
+router.post('/products/search', productController.searchProductsByName);
 module.exports = router;
