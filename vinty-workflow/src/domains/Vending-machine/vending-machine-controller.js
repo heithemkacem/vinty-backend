@@ -25,7 +25,7 @@ exports.createVendingMachine = async (req, res) => {
     const {
       name,
       description,
-      paymentMethods = ["Cash"], // Default to 'Cash' if not provided
+      paymentMethods = ["Cash"], 
       openDays,
       openHours,
       alwaysOpen,
