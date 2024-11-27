@@ -76,7 +76,14 @@ exports.createVendingMachine = async (req, res) => {
 
 exports.getAllVendingMachines = async (req, res) => {
   try {
-    const vendingMachines = await VendingMachine.find()
+    const vendingMachines = await VendingMachine.find().populate({
+      path: "products",
+      populate: [
+        { path: "category", model: "Category" },
+        { path: "subCategory", model: "SubCategory" },
+      ],
+    });
+
     res.status(200).json(vendingMachines);
   } catch (error) {
     console.error("Error fetching vending machines:", error);
