@@ -1,4 +1,3 @@
-// models/VendingMachine.js
 const mongoose = require("mongoose");
 
 const vendingMachineSchema = new mongoose.Schema(
@@ -7,18 +6,12 @@ const vendingMachineSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    images: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Image",
-      },
-    ],
     location: {
       type: String,
-      required: true,
     },
-    open: {
-      type: [String],
+    images: [{ type: mongoose.Schema.Types.ObjectId, ref: "Image" }],
+    openDays: {
+      type: [String], // Array of days
       enum: [
         "Monday",
         "Tuesday",
@@ -30,20 +23,43 @@ const vendingMachineSchema = new mongoose.Schema(
       ],
       default: [],
     },
+    openHours: {
+      start: {
+        type: String,
+        required: function () {
+          return !this.alwaysOpen;
+        },
+      },
+      end: {
+        type: String,
+        required: function () {
+          return !this.alwaysOpen;
+        },
+      },
+    },
+    alwaysOpen: {
+      type: Boolean,
+      default: false,
+    },
     position: {
-      lat: { type: Number, required: true },
-      long: { type: Number, required: true },
+      lat: { type: Number },
+      long: { type: Number },
     },
     products: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Product",
+        productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+        price: { type: Number },
       },
     ],
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "VendingMachineOwner",
       required: true,
+    },
+    paymentMethods: {
+      type: [String],
+      enum: ["Cash", "Card", "Both"],
+      default: ["Cash"],
     },
   },
   { timestamps: true }

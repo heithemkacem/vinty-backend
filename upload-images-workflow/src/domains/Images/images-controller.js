@@ -42,11 +42,32 @@ exports.uploadSingleImage = async (req, res) => {
     res.status(500).send({ message: "Error uploading image" });
   }
 };
-
 exports.uploadMultipleImages = async (req, res) => {
   const files = req.files;
+  console.log(req.files);
+  console.log(req.body);
+
   const bucketName = process.env.AWS_ACCESS_POINT; // Ensure correct case
-  const Machine = await VendingMachine.findById(req.body.vending_machine_id);
+  const Machine = await VendingMachine.findById(req.body.id);
+
+  if (!Machine) {
+    return res.status(404).send({ message: "Vending machine not found." });
+  }
+
+  const currentImageCount = Machine.images.length; // Current number of images
+  const newImageCount = files.length; // Number of new images to upload
+
+  // Calculate total images after upload
+  const totalImages = currentImageCount + newImageCount;
+
+  // Check if total exceeds limit
+  if (totalImages > 6) {
+    const maxUploadable = 6 - currentImageCount; // Calculate how many more can be uploaded
+    return res.status(400).send({
+      message: `Maximum number of images allowed is 6. You can only upload ${maxUploadable} more image(s).`,
+    });
+  }
+
   const uploadPromises = files.map(async (file) => {
     const key = `images/${Date.now()}-${file.originalname}`;
     const params = {
@@ -84,7 +105,8 @@ exports.uploadMultipleImages = async (req, res) => {
       Machine.images.push(result.image._id);
     });
     await Machine.save();
-    res.send({ message: "Images uploaded successfully", results });
+    console.log(Machine);
+    res.status(200).send({ message: "Images uploaded successfully", results });
   } catch (err) {
     console.error(err);
     res.status(500).send({ message: "Error uploading images" });
