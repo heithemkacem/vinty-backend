@@ -94,7 +94,7 @@ exports.getAllVendingMachines = async (req, res) => {
 exports.getVendingMachineById = async (req, res) => {
   try {
     const vendingMachine = await VendingMachine.findOne({
-      _id: req.body.id,
+      _id: req.params.id,
     }).populate({
       path: "products",
       populate: [
