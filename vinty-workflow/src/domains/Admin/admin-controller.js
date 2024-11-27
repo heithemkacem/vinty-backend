@@ -37,7 +37,11 @@ exports.createAdmin = async (req, res) => {
 
 exports.getAllOwnersWithVendingMachineCount = async (req, res) => {
   try {
-    const owners = await VendingMachineOwner.aggregate([
+    const { page = 1 } = req.query;
+    const limit = 6; 
+    const skip = (page - 1) * limit; 
+
+    const result = await VendingMachineOwner.aggregate([
       {
         $lookup: {
           from: "vendingmachines",
@@ -54,11 +58,29 @@ exports.getAllOwnersWithVendingMachineCount = async (req, res) => {
           vendingMachineCount: { $size: "$vendingMachineDetails" },
         },
       },
+      {
+        $facet: {
+          owners: [
+            { $skip: skip }, 
+            { $limit: limit } 
+          ],
+          totalCount: [
+            { $count: "count" }
+          ]
+        },
+      },
     ]);
+
+    const owners = result[0].owners;
+    const totalCount = result[0].totalCount[0]?.count || 0;
+    const totalPages = Math.ceil(totalCount / limit);
 
     res.status(200).json({
       ok: true,
       owners,
+      currentPage: parseInt(page, 10),
+      totalPages,
+      totalCount,
     });
   } catch (error) {
     console.error("Error fetching owners:", error.message);
@@ -68,6 +90,7 @@ exports.getAllOwnersWithVendingMachineCount = async (req, res) => {
     });
   }
 };
+
 exports.searchOwnerByNameOrEmail = async (req, res) => {
   const { query } = req.body;
   const adminId = req.user.userData._id; 
