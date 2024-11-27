@@ -13,23 +13,6 @@ const vendingMachineSchema = new mongoose.Schema(
       type:String
     },
     images: [{ type: mongoose.Schema.Types.ObjectId, ref: "Image" }],
-<<<<<<< HEAD
-    openDays: {
-      type: [String], 
-      enum: [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-      ],
-      default: [],
-    },
-=======
-
->>>>>>> 598d330108451650abdb30fb837daf74d9039d9e
     openHours: {
       start: {
         type: String,
