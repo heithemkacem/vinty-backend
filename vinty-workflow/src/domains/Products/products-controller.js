@@ -108,19 +108,24 @@ exports.getProductsByVendingMachineId = async (req, res) => {
   };
   exports.getProductsForCategory = async (req, res) => {
     try {
-      const { categoryId } = req.body;
-
-      const category = await Category.findById(categoryId);
-      if (!category) {
-        return res.status(404).json({ message: 'Category not found' });
+      const { categoryIds } = req.body;
+  
+      if (!Array.isArray(categoryIds) || categoryIds.length === 0) {
+        return res.status(400).json({ message: 'Please provide a valid array of category IDs' });
       }
   
-      const products = await Product.find({ categories: categoryId })
+   
+      const categories = await Category.find({ _id: { $in: categoryIds } });
+      if (categories.length !== categoryIds.length) {
+        return res.status(404).json({ message: 'One or more categories not found' });
+      }
+
+      const products = await Product.find({ categories: { $in: categoryIds } })
         .populate({
           path: 'categories', 
         })
         .populate({
-          path: 'subCategories', 
+          path: 'subCategories',  
         });
   
       res.status(200).json(products);
@@ -129,6 +134,7 @@ exports.getProductsByVendingMachineId = async (req, res) => {
       res.status(500).json({ ok: false, status: 500, message: 'Server error' });
     }
   };
+  
   
 
 
@@ -140,7 +146,6 @@ exports.searchProductsByName = async (req, res) => {
       return res.status(400).json({ message: 'Invalid query. Please provide a valid string.' });
     }
 
-    // Perform a case-insensitive search
     const products = await Product.find({ 
       name: { $regex: query, $options: 'i' } 
     });
