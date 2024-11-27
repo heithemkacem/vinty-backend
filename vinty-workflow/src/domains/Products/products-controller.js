@@ -15,7 +15,7 @@ exports.createProduct = async (req, res) => {
   }
 };
 
-// Get all products
+
 exports.getAllProducts = async (req, res) => {
   try {
     const { page = 1 } = req.query; 
@@ -27,7 +27,7 @@ exports.getAllProducts = async (req, res) => {
       .populate('subCategories') 
       .skip(skip)
       .limit(limit);
-
+      
     const totalProducts = await Product.countDocuments(); 
     const totalPages = Math.ceil(totalProducts / limit); 
 
@@ -38,7 +38,7 @@ exports.getAllProducts = async (req, res) => {
       totalProducts,
     });
   } catch (error) {
-    console.error(error); // Log the error for debugging
+    console.error(error); 
     res.status(500).json({ ok: false, status: 500, message: 'Server error' });
   }
 };
@@ -109,22 +109,27 @@ exports.getProductsByVendingMachineId = async (req, res) => {
   exports.getProductsForCategory = async (req, res) => {
     try {
       const { categoryId } = req.body;
+
       const category = await Category.findById(categoryId);
       if (!category) {
         return res.status(404).json({ message: 'Category not found' });
       }
-      const products = await Product.find({ category: categoryId })
+  
+      const products = await Product.find({ categories: categoryId })
         .populate({
-          path: 'category',
+          path: 'categories', 
         })
         .populate({
-          path: 'subCategory', 
+          path: 'subCategories', 
         });
+  
       res.status(200).json(products);
     } catch (error) {
-      res.status(500).json(createErrorResponse('Server error', 500));
+      console.error(error); 
+      res.status(500).json({ ok: false, status: 500, message: 'Server error' });
     }
   };
+  
 
 
 exports.searchProductsByName = async (req, res) => {
