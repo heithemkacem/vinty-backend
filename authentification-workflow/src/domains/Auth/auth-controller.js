@@ -58,7 +58,7 @@ exports.googleLogin = async (req, res) => {
         userData, 
       },
       process.env.JWT_SECRET,
-      { expiresIn: "24h" } 
+      { expiresIn: "30d" }
     );
 
     res.status(200).json({
