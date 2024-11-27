@@ -1,7 +1,12 @@
-
-const {Product,SubCategory,Category,VendingMachineOwner,Client,VendingMachine} = require("../../models");
+const {
+  Product,
+  SubCategory,
+  Category,
+  VendingMachineOwner,
+  Client,
+  VendingMachine,
+} = require("../../models");
 const { createErrorResponse } = require("../../Utils/Error-handle");
-
 
 const updateRecentSearch = async (clientId, searchTerm) => {
   try {
@@ -15,13 +20,12 @@ const updateRecentSearch = async (clientId, searchTerm) => {
   }
 };
 
-
 exports.createVendingMachine = async (req, res) => {
   try {
     const {
       name,
       description,
-      paymentMethods = ['Cash'], // Default to 'Cash' if not provided
+      paymentMethods = ["Cash"], // Default to 'Cash' if not provided
       openDays,
       openHours,
       alwaysOpen,
@@ -36,7 +40,10 @@ exports.createVendingMachine = async (req, res) => {
 
     // Validate open hours if not always open
     if (!alwaysOpen && (!openHours || !openHours.start || !openHours.end)) {
-      return res.status(400).json({ message: "Open hours are required if the vending machine is not always open." });
+      return res.status(400).json({
+        message:
+          "Open hours are required if the vending machine is not always open.",
+      });
     }
 
     // Create a vending machine with the simplified fields
@@ -66,7 +73,6 @@ exports.createVendingMachine = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
-
 
 exports.getAllVendingMachines = async (req, res) => {
   try {
@@ -125,9 +131,7 @@ exports.updateVendingMachine = async (req, res) => {
     );
 
     if (!vendingMachine) {
-      return res
-        .status(404)
-        .json({ message: "Vending Machine not found" });
+      return res.status(404).json({ message: "Vending Machine not found" });
     }
 
     res.status(200).json({
@@ -139,7 +143,6 @@ exports.updateVendingMachine = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
-
 
 exports.deleteVendingMachine = async (req, res) => {
   try {
@@ -154,9 +157,7 @@ exports.deleteVendingMachine = async (req, res) => {
     const vendingMachine = await VendingMachine.findByIdAndDelete(id);
 
     if (!vendingMachine) {
-      return res
-        .status(404)
-        .json({ message: "Vending Machine not found" });
+      return res.status(404).json({ message: "Vending Machine not found" });
     }
 
     res.status(200).json({ message: "Vending Machine deleted successfully" });
@@ -165,7 +166,6 @@ exports.deleteVendingMachine = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
-
 
 exports.searchVendingMachines = async (req, res) => {
   const clientId = req.user.userData._id;
@@ -230,9 +230,6 @@ exports.searchVendingMachines = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
-;
-
-
 exports.getAllVendingMachineCoordinates = async (req, res) => {
   try {
     const coordinates = await VendingMachine.find({}, "position");
@@ -248,7 +245,9 @@ exports.toggleBlockVendingMachine = async (req, res) => {
     const { id } = req.body;
 
     if (!id) {
-      return res.status(400).json({ message: "Vending machine ID is required" });
+      return res
+        .status(400)
+        .json({ message: "Vending machine ID is required" });
     }
 
     const vendingMachine = await VendingMachine.findById(id);
@@ -261,7 +260,9 @@ exports.toggleBlockVendingMachine = async (req, res) => {
     await vendingMachine.save();
 
     res.status(200).json({
-      message: `Vending machine is now ${vendingMachine.isBlocked ? "blocked" : "unblocked"}`,
+      message: `Vending machine is now ${
+        vendingMachine.isBlocked ? "blocked" : "unblocked"
+      }`,
       vendingMachine,
     });
   } catch (error) {
@@ -270,17 +271,24 @@ exports.toggleBlockVendingMachine = async (req, res) => {
   }
 };
 
-
 exports.updateVendingMachineLocation = async (req, res) => {
   try {
-    const { id, position ,location} = req.body;
-
+    const { id, position, location } = req.body;
+    console.log(id, location, position);
     if (!id) {
-      return res.status(400).json({ message: "Vending machine ID is required" });
+      return res
+        .status(400)
+        .json({ message: "Vending machine ID is required" });
     }
 
-    if (!position || typeof position.lat !== 'number' || typeof position.long !== 'number') {
-      return res.status(400).json({ message: "Valid location with 'lat' and 'long' is required" });
+    if (
+      !position ||
+      typeof position.lat !== "number" ||
+      typeof position.long !== "number"
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Valid location with 'lat' and 'long' is required" });
     }
 
     const vendingMachine = await VendingMachine.findByIdAndUpdate(
@@ -288,41 +296,41 @@ exports.updateVendingMachineLocation = async (req, res) => {
       { position: position, location: location },
       { new: true }
     );
-    
+
     if (!vendingMachine) {
       return res.status(404).json({ message: "Vending machine not found" });
     }
-    
-   
+
     const vendingMachineData = vendingMachine.toObject();
-    vendingMachineData.products = vendingMachineData.products.map(product => {
+    vendingMachineData.products = vendingMachineData.products.map((product) => {
       const { buffer, ...rest } = product;
       return rest;
     });
-    
+
     res.status(200).json({
       message: "Location updated successfully",
       vendingMachine: vendingMachineData,
     });
-    
   } catch (error) {
     console.error("Error updating location:", error.message);
     res.status(500).json({ message: "Server error", error });
   }
 };
 
-
-
 exports.addProductsToVendingMachine = async (req, res) => {
   try {
     const { id, products } = req.body;
 
     if (!id) {
-      return res.status(400).json({ message: "Vending machine ID is required" });
+      return res
+        .status(400)
+        .json({ message: "Vending machine ID is required" });
     }
 
     if (!Array.isArray(products) || products.length === 0) {
-      return res.status(400).json({ message: "Products must be a non-empty array" });
+      return res
+        .status(400)
+        .json({ message: "Products must be a non-empty array" });
     }
 
     const vendingMachine = await VendingMachine.findById(id);
@@ -333,12 +341,13 @@ exports.addProductsToVendingMachine = async (req, res) => {
 
     for (let product of products) {
       const existingProduct = await Product.findById(product.productId);
-      
+
       if (!existingProduct) {
-        return res.status(404).json({ message: `Product with ID ${product.productId} not found` });
+        return res
+          .status(404)
+          .json({ message: `Product with ID ${product.productId} not found` });
       }
 
-     
       product.price = existingProduct.price;
     }
     vendingMachine.products.push(...products);
@@ -356,10 +365,12 @@ exports.addProductsToVendingMachine = async (req, res) => {
 
 exports.setProductPrices = async (req, res) => {
   try {
-    const { id, prices } = req.body; 
+    const { id, prices } = req.body;
 
     if (!id || !prices) {
-      return res.status(400).json({ message: "Vending machine ID and prices are required" });
+      return res
+        .status(400)
+        .json({ message: "Vending machine ID and prices are required" });
     }
 
     const vendingMachine = await VendingMachine.findById(id);
@@ -368,20 +379,19 @@ exports.setProductPrices = async (req, res) => {
       return res.status(404).json({ message: "Vending machine not found" });
     }
 
-  
-    vendingMachine.products = vendingMachine.products.map(product => {
+    vendingMachine.products = vendingMachine.products.map((product) => {
       if (prices[product.productId]) {
-        product.price = prices[product.productId]; 
+        product.price = prices[product.productId];
       }
       return product;
     });
 
     await vendingMachine.save();
 
-    const sanitizedProducts = vendingMachine.products.map(product => ({
+    const sanitizedProducts = vendingMachine.products.map((product) => ({
       productId: product.productId,
       price: product.price,
-      _id: product._id, 
+      _id: product._id,
     }));
 
     res.status(200).json({

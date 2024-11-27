@@ -1,35 +1,68 @@
-// models/VendingMachine.js
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const vendingMachineSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true
-  },
-  location: {
-    type: String,
-    required: true
-  },
-  open: {
-    type: [String],
-    enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-    default: []
-  },
-  position: {
-    lat: { type: Number, required: true },
-    long: { type: Number, required: true }
-  },
-  products: [
-    {
+const vendingMachineSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    location: {
+      type: String,
+    },
+    images: [{ type: mongoose.Schema.Types.ObjectId, ref: "Image" }],
+    openDays: {
+      type: [String], // Array of days
+      enum: [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+      ],
+      default: [],
+    },
+    openHours: {
+      start: {
+        type: String,
+        required: function () {
+          return !this.alwaysOpen;
+        },
+      },
+      end: {
+        type: String,
+        required: function () {
+          return !this.alwaysOpen;
+        },
+      },
+    },
+    alwaysOpen: {
+      type: Boolean,
+      default: false,
+    },
+    position: {
+      lat: { type: Number },
+      long: { type: Number },
+    },
+    products: [
+      {
+        productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+        price: { type: Number },
+      },
+    ],
+    owner: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Product'
-    }
-  ],
-  owner: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'VendingMachineOwner',
-    required: true
-  }
-}, { timestamps: true });
+      ref: "VendingMachineOwner",
+      required: true,
+    },
+    paymentMethods: {
+      type: [String],
+      enum: ["Cash", "Card", "Both"],
+      default: ["Cash"],
+    },
+  },
+  { timestamps: true }
+);
 
-module.exports = mongoose.model('VendingMachine', vendingMachineSchema);
+module.exports = mongoose.model("VendingMachine", vendingMachineSchema);
