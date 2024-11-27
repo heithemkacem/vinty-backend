@@ -18,15 +18,31 @@ exports.createProduct = async (req, res) => {
 // Get all products
 exports.getAllProducts = async (req, res) => {
   try {
-    
+    const { page = 1 } = req.query; 
+    const limit = 6;
+    const skip = (page - 1) * limit;
+
     const products = await Product.find()
-      .populate('category') 
-      .populate('subCategory');
-    res.status(200).json(products);
+      .populate('categories') 
+      .populate('subCategories') 
+      .skip(skip)
+      .limit(limit);
+
+    const totalProducts = await Product.countDocuments(); 
+    const totalPages = Math.ceil(totalProducts / limit); 
+
+    res.status(200).json({
+      products,
+      currentPage: parseInt(page, 10),
+      totalPages,
+      totalProducts,
+    });
   } catch (error) {
-    res.status(500).json(createErrorResponse('Server error', 500));
+    console.error(error); // Log the error for debugging
+    res.status(500).json({ ok: false, status: 500, message: 'Server error' });
   }
 };
+
 
 
 // Get a product by ID
@@ -109,4 +125,29 @@ exports.getProductsByVendingMachineId = async (req, res) => {
       res.status(500).json(createErrorResponse('Server error', 500));
     }
   };
-  
+
+
+exports.searchProductsByName = async (req, res) => {
+  try {
+    const { query } = req.body;
+
+    if (!query || typeof query !== 'string') {
+      return res.status(400).json({ message: 'Invalid query. Please provide a valid string.' });
+    }
+
+    // Perform a case-insensitive search
+    const products = await Product.find({ 
+      name: { $regex: query, $options: 'i' } 
+    });
+
+    if (products.length === 0) {
+      return res.status(404).json({ message: 'No products found matching the query.' });
+    }
+
+    res.status(200).json(products);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while searching for products.' });
+  }
+};
+
